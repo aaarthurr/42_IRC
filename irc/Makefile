@@ -6,7 +6,7 @@ CC = c++ -std=c++98
 
 CFLAGS = -Wall -Wextra -Werror
 
-SRC1 = main.cpp 
+SRC1 = client.cpp 
 
 SRC2 = serveur.cpp irc.cpp
 

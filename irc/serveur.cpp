@@ -14,8 +14,11 @@ catch(const std::exception& e)
 }
     std::cout << "Connection accepted!\n";
     // Close sockets
- 
-    while (true)
+    char *exit;
+    while ( exit != "exit")
+    {
         sock.receiveMessages();
+        read(0, exit, 100);
+    }
     return 0;
 }

@@ -55,6 +55,7 @@ void Socket::receiveMessages() {
 
     // Add all client sockets to the set
     std::list<int>::iterator it;
+
     for (it = client_sockets.begin(); it != client_sockets.end(); ++it) {
         FD_SET(*it, &readfds);
         if (*it > max_fd) {
@@ -73,7 +74,7 @@ void Socket::receiveMessages() {
     if (FD_ISSET(sock, &readfds)) {
         handleNewConnection();
     }
-
+    int x = 0;
     // Check all client sockets for incoming data
     for (it = client_sockets.begin(); it != client_sockets.end(); ) {
         int client_sock = *it;
@@ -95,17 +96,18 @@ void Socket::receiveMessages() {
             }
 
             buffer[bytes_received] = '\0';  // Null-terminate the buffer
-            std::cout << "Client says: " << buffer << "\n";
+            std::cout << "Client " << x <<" says: " << buffer << "\n";
 
             // Handle client message or exit condition
             if (strcmp(buffer, "exit") == 0) {
-                std::cout << "Client requested to close the connection.\n";
+                std::cout << "Client " << x << " requested to close the connection.\n";
                 close(client_sock);
                 it = client_sockets.erase(it);  // Remove client socket
                 continue;
             }
         }
         ++it;
+        x++;
     }
 }
 
