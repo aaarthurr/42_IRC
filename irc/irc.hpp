@@ -7,15 +7,20 @@
 #include <iostream>
 #include <cstring>
 #include <netinet/in.h>
+#include <list>  // C++98 does not support dynamic array resizing in vector
+#include <vector>
 
-class Socket{
+class Socket {
+private:
+    int sock;
+    struct sockaddr_in server_address;
+    std::list<int> client_sockets;  // Use list to track client sockets
 
-    private:
-        int sock;
-        struct sockaddr_in server_address;
-    public:
-        Socket();
-        void connectToServer(const std::string& ip, int port);
-        void connectToClient(const std::string& ip, int port);
-     ~Socket();   
+public:
+    Socket();
+    void connectSocket(int port);
+    void receiveMessages();
+    void handleNewConnection();
+    int getSock();
+    ~Socket();
 };

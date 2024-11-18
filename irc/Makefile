@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -Werror
 
 SRC1 = main.cpp 
 
-SRC2 = serveur.cpp
+SRC2 = serveur.cpp irc.cpp
 
 OBJ1 = $(SRC1:cpp=o)
 

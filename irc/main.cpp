@@ -46,6 +46,10 @@ int main() {
             break;
         }
   }
+    ssize_t bytes_sent = send(sock, mess.c_str(), mess.length(), MSG_CONFIRM);
+        if (bytes_sent == -1) {
+            std::cerr << "Failed to send message\n";
+        }
     // Close the socket
     close(sock);
 
