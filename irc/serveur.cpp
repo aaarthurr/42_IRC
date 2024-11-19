@@ -1,4 +1,5 @@
-#include "irc.hpp"
+#include "Socket.hpp"
+
 int main() {
 
     Socket sock;
@@ -12,13 +13,19 @@ catch(const std::exception& e)
     std::cerr << e.what() << '\n';
     return (0);
 }
-    std::cout << "Connection accepted!\n";
+try {
     // Close sockets
-    char *exit;
-    while ( exit != "exit")
+    while (true)
     {
-        sock.receiveMessages();
-        read(0, exit, 100);
+        sock.wait_for_act();
+        if (sock.AddClient())
+            std::cout << "handling messages.." << std::endl;
     }
-    return 0;
+}
+   catch(const std::exception& e)
+{
+    std::cerr << e.what() << '\n';
+    return (0);
+}
+ return 0;
 }
