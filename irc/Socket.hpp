@@ -29,6 +29,7 @@ public:
     int    wait_for_act();
     void    handleMess();
     void    handleRequest();
+	int trigger;
 
     ~Socket();
 };

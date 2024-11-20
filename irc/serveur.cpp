@@ -17,9 +17,12 @@ try {
     // Close sockets
     while (sock.wait_for_act())
     {
+		if (sock.trigger != 2)
+		{
         sock.addClient();
-        sock.handleMess();
+       // sock.handleMess();
         sock.handleRequest();
+		}
     }
 }
    catch(const std::exception& e)

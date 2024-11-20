@@ -24,7 +24,7 @@ class User
         std::string getUsername();
         std::string getNickname();
         int         getClientSock();
-        static void sendText(std::string text, int dest_sock, const std::vector<pollfd>& fds);
+        static void sendText(std::string text, int dest_sock,  struct pollfd fds);
         ~User();
 };
 
