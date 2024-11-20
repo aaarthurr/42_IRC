@@ -37,16 +37,19 @@ int main() {
 
     std::cout << "Connected to the server successfully!\n";
 
-    std::string mess;
-
-  while (std::cin >> mess && mess != "exit") {
-        ssize_t bytes_sent = send(sock, mess.c_str(), mess.length(), MSG_CONFIRM);
+    std::string mess = "dsds";
+    char buff[1024];
+  while (mess != "exit") {
+        recv(sock, buff, sizeof(buff), MSG_CONFIRM);
+        std::cout << buff << std::endl;
+        std::cin >> mess ;
+        ssize_t bytes_sent = send(sock, mess.c_str(), mess.length(), MSG_DONTWAIT);
         if (bytes_sent == -1) {
             std::cerr << "Failed to send message\n";
             break;
         }
   }
-    ssize_t bytes_sent = send(sock, mess.c_str(), mess.length(), MSG_CONFIRM);
+    ssize_t bytes_sent = send(sock, mess.c_str(), mess.length(), MSG_DONTWAIT);
         if (bytes_sent == -1) {
             std::cerr << "Failed to send message\n";
         }

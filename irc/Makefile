@@ -4,7 +4,7 @@ NAME1 = irclient
 
 CC = c++ -std=c++98
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -g -Wall -Wextra -Werror
 
 SRC1 = client.cpp 
 

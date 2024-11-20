@@ -8,23 +8,23 @@
 #include <iostream>
 #include <cstring>
 #include <netinet/in.h>
+#include <poll.h>
+#include <vector>
 
 class User
 {
     protected:
         std::string username;
         std::string nickname;
-        std::string mdp;
         int         sock;
     public:
         User();
         User(const User &usr);
-        User(std::string username, std::string nickname, std::string mdp, int sock);
+        User(std::string username, std::string nickname, int sock);
         std::string getUsername();
         std::string getNickname();
-        std::string getMdp();
         int         getClientSock();
-        void        sendText(std::string text, int dest_sock);
+        static void sendText(std::string text, int dest_sock, const std::vector<pollfd>& fds);
         ~User();
 };
 

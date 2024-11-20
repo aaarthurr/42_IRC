@@ -1,31 +1,33 @@
 #include "Socket.hpp"
+#include <iostream>
+#include <stdexcept>
+#include <cstring>
+#include <unistd.h>
 
-// Constructor: Create a server socket
 Socket::Socket() {
-
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1)
         throw std::runtime_error("Socket creation failed");
-    FD_ZERO(&readfds);
-    FD_SET(sock, &readfds); 
+
+    pollfd server_pollfd;
+    server_pollfd.fd = sock;
+    server_pollfd.events = POLLIN;  // Monitor the server socket for incoming connections
+    fds.push_back(server_pollfd);
 }
 
-// Bind and listen on the server socket
-void Socket::connectSocket(int port)
-{
+/*-----------------------------------------------------------------------------------------*/
+
+void Socket::connectSocket(int port) {
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
-    server_address.sin_addr.s_addr = INADDR_ANY;  // Listen on all interfaces
+    server_address.sin_addr.s_addr = INADDR_ANY;  
 
-    // Bind the socket to the address
-    if (bind(sock, (struct sockaddr*)&server_address, sizeof(server_address)) == -1)
-    {
+    if (bind(sock, (struct sockaddr*)&server_address, sizeof(server_address)) == -1) {
         close(sock);
         throw std::runtime_error("Binding failed");
     }
 
-    // Listen for incoming connections
     if (listen(sock, 5) == -1) {
         close(sock);
         throw std::runtime_error("Listening failed");
@@ -34,104 +36,128 @@ void Socket::connectSocket(int port)
     std::cout << "Server is listening on port " << port << "...\n";
 }
 
-// Handle new incoming connections
-int Socket::handleNewConnection()
-{
+/*-----------------------------------------------------------------------------------------*/
+
+void Socket::handleNewConnection() {
     struct sockaddr_in client_address;
     socklen_t client_len = sizeof(client_address);
     int new_client_sock = accept(sock, (struct sockaddr*)&client_address, &client_len);
-    for (std::map<std::string, User*>::iterator it = client_sockets.begin(); it != client_sockets.end(); ++it) {
-        if (new_client_sock == it->second->getClientSock())
-            return (1);
-    }
+
     if (new_client_sock == -1)
         throw std::runtime_error("Accept failed");
-    char text[3][1024];
-    User temp("temp", "guest", "temp", new_client_sock);
-    memset(text, 0, sizeof(text)); // Initialize the entire array to zero
 
-    temp.sendText("Enter your username:", new_client_sock);
-    recv(sock, text[0], sizeof(text[0]) - 1, 0); // Reserve space for null-terminator
-    text[0][sizeof(text[0]) - 1] = '\0'; // Manually null-terminate
+    char text[2][1024];
+    memset(text, 0, sizeof(text));
 
- 
+    User::sendText("Enter your username:", new_client_sock, fds);
+    recv(new_client_sock, text[0], 1023, 0);
+    text[0][1023] = '\0';
 
-    temp.sendText("Enter your nickname:", new_client_sock);
-    recv(sock, text[1], sizeof(text[1]) - 1, 0); // Reserve space for null-terminator
-    text[1][sizeof(text[1]) - 1] = '\0'; // Manually null-terminate
+    User::sendText("Enter your nickname:", new_client_sock, fds);
+    recv(new_client_sock, text[1], 1023, 0);
+    text[1][1023] = '\0';
 
-
- 
-
-    temp.sendText("Enter your password:", new_client_sock);
-    recv(sock, text[2], sizeof(text[2]) - 1, 0); // Reserve space for null-terminator
-    text[2][sizeof(text[2]) - 1] = '\0'; // Manually null-terminate
-
-        std::string username(text[0]);
+    std::string username(text[0]);
     std::string nickname(text[1]);
-    std::string password(text[2]);
 
- 
-    User *newUser = new User(username, nickname, password, new_client_sock);
-    client_sockets[newUser->getUsername()] = newUser;  // Add the new client socket to the list
-    std::cout << "New client connected:" << std::endl;
-    std::cout << "Username : " << newUser->getUsername() << std::endl;
-    std::cout << "Nickname : " << newUser->getNickname() << std::endl;
-    std::cout << "Mdp : " << newUser->getMdp() << std::endl;
-    FD_SET(new_client_sock, &readfds);
-    return (0);
+    User* newUser = new User(username, nickname, new_client_sock);
+    client_sockets[newUser->getUsername()] = newUser;
+    std::cout << "New client connected: " << newUser->getUsername() << std::endl;
+
+    struct pollfd client_pollfd = {new_client_sock, POLLIN | POLLOUT, 0};
+    fds.push_back(client_pollfd);  // Add client socket to pollfd list
 }
 
-void    Socket::wait_for_act()
-{
-      // File descriptor set for select()
-   // Add the server socket to the set
+/*-----------------------------------------------------------------------------------------*/
 
-    int max_fd = sock;
+void Socket::handleMess() {
+    char buff[1024];
 
-    // Add all client sockets to the set
-    for (std::map<std::string, User*>::iterator it = client_sockets.begin(); it != client_sockets.end(); ++it) {
-        
-        if (it->second->getClientSock() > max_fd) {
-            max_fd = it->second->getClientSock();  // Keep track of the largest file descriptor
+    for (size_t i = 1; i < fds.size(); ++i) {  // Skip the first entry (server socket)
+        if (fds[i].revents & POLLIN) {  // Check if the client has sent data
+            int client_sock = fds[i].fd;
+            int bytes_read = recv(client_sock, buff, sizeof(buff) - 1, 0);
+            if (bytes_read <= 0 || !strncmp("exit", buff, 4)) {
+                // Handle disconnection
+                std::cout << "Client disconnected: " << client_sock << std::endl;
+                close(client_sock);
+
+                // Remove the client from pollfd and client_sockets
+                std::map<std::string, User*>::iterator it = client_sockets.begin();
+               for(  ; it->second->getClientSock() != client_sock;)
+                it++;;
+                if (it != client_sockets.end()) {
+                    client_sockets.erase(it);
+                }
+
+                fds.erase(fds.begin() + i);
+                --i;  // Adjust index after erasing to ensure no client is skipped
+            } else {
+                buff[bytes_read] = '\0';  // Null-terminate the received data
+                std::cout << "Message from client " << client_sock << ": " << buff << std::endl;
+            }
         }
     }
+}
 
-    // Wait for activity on any of the sockets (blocking call)
-    int activity = select(max_fd + 1, &readfds, NULL, NULL, NULL);
+/*-----------------------------------------------------------------------------------------*/
+
+int Socket::wait_for_act() {
+    int activity = poll(&fds[0], fds.size(), -1);  // Wait indefinitely for events
     if (activity < 0) {
-        throw std::runtime_error("select() error");
+        throw std::runtime_error("poll() error");
     }
-}
-int Socket::AddClient() {
-
-    int x = 0;
-    // Check if the server socket is ready to accept a new connection
-    if (FD_ISSET(sock, &readfds))
-    {
-        try
-        {
-           x = handleNewConnection();
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-    }
-    return (x);
+    return activity;
 }
 
+/*-----------------------------------------------------------------------------------------*/
 
-// Get server socket
+void Socket::handleRequest() {
+    char buff[1024];
+    for (size_t i = 0; i < fds.size(); ++i) {
+        if (fds[i].revents & POLLIN) {
+            int client_sock = fds[i].fd;
+            int bytes_received = recv(client_sock, buff, sizeof(buff) - 1, 0);
+            if (bytes_received > 0) {
+                buff[bytes_received] = '\0';
+                std::cout << "Message received: " << buff << std::endl;
+            } else {
+                std::cerr << "Failed to receive data from socket " << client_sock << std::endl;
+            }
+        }
+    }
+}
+
+/*-----------------------------------------------------------------------------------------*/
+
+int Socket::addClient() {
+    if (fds[0].revents & POLLIN) {  // Server socket is always the first element
+        try {
+            handleNewConnection();
+        } catch (const std::exception& e) {
+            std::cerr << "Error adding client: " << e.what() << std::endl;
+        }
+    }
+    return 0;
+}
+
+/*-----------------------------------------------------------------------------------------*/
+
 int Socket::getSock() {
     return sock;
 }
 
-// Destructor: Close sockets
+/*-----------------------------------------------------------------------------------------*/
+
 Socket::~Socket() {
-    std::map<std::string, User>::iterator it;
     for (std::map<std::string, User*>::iterator it = client_sockets.begin(); it != client_sockets.end(); ++it) {
-        delete it->second;  // Free memory
+        close(it->second->getClientSock());
+        delete it->second;
     }
-    close(sock);
+    client_sockets.clear();
+
+    for (size_t i = 0; i < fds.size(); ++i) {
+        close(fds[i].fd);
+    }
+    fds.clear();
 }

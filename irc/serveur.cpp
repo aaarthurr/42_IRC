@@ -15,11 +15,11 @@ catch(const std::exception& e)
 }
 try {
     // Close sockets
-    while (true)
+    while (sock.wait_for_act())
     {
-        sock.wait_for_act();
-        if (sock.AddClient())
-            std::cout << "handling messages.." << std::endl;
+        sock.addClient();
+        sock.handleMess();
+        sock.handleRequest();
     }
 }
    catch(const std::exception& e)
