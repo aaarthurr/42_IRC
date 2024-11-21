@@ -38,7 +38,7 @@ void Socket::connectSocket(int port) {
 }
 
 /*-----------------------------------------------------------------------------------------*/
-
+/*
 void Socket::handleNewConnection() {
     struct sockaddr_in client_address;
     socklen_t client_len = sizeof(client_address);
@@ -92,7 +92,7 @@ void Socket::handleNewConnection() {
        			User::sendText("Enter your text:\n", new_client_sock, client_pollfd);
 
 }
-
+*/
 
 /*-----------------------------------------------------------------------------------------*/
 
@@ -163,11 +163,61 @@ void Socket::handleRequest() {
 int Socket::addClient() {
     if (fds[0].revents & POLLIN) {  // Server socket is always the first element
         try {
-            handleNewConnection();
+            char buff[1024];
+            memset(buff, 0, 1024);
+            std::string text = "USER";
+           // handleNewConnection();
+            struct sockaddr_in client_address;
+    socklen_t client_len = sizeof(client_address);
+    int new_client_sock = accept(sock, (struct sockaddr*)&client_address, &client_len);
+
+    if (new_client_sock == -1) {
+        std::cerr << "Accept failed: " << strerror(errno) << std::endl;
+        return 1; // Safely return if accept fails
+    }
+
+    // Add new client to the pollfd list, initially monitoring only for POLLIN
+    struct pollfd client_pollfd = {new_client_sock, POLLIN, 0};
+    fds.push_back(client_pollfd);
+
+    int bytes_received = recv(new_client_sock, buff, sizeof(buff) - 1, 0);
+if (bytes_received > 0) {
+    buff[bytes_received] = '\0'; // Safely null-terminate
+} else {
+    std::cerr << "Receive failed or client disconnected." << std::endl;
+    
+}
+    std::cout << "Client says: " << buff << std::endl;
+        const char* cap_reply = ":server CAP * LS :multi-prefix sasl";
+        send(new_client_sock, cap_reply, strlen(cap_reply), 0);
+
+     bytes_received = recv(new_client_sock, buff, sizeof(buff) - 1, 0);
+if (bytes_received > 0) {
+    buff[bytes_received] = '\0'; // Safely null-terminate
+} else {
+    std::cerr << "Receive failed or client disconnected." << std::endl;
+    
+}
+    std::cout << "Client says: " << buff << std::endl;
+         int bytesent =  send(new_client_sock, text.c_str(), 4, 0);
+    std::cout << "bytesent: " << bytesent << std::endl;
+         bytes_received = recv(new_client_sock, buff, sizeof(buff) - 1, 0);
+if (bytes_received > 0) {
+    buff[bytes_received] = '\0'; // Safely null-terminate
+    std::cout << "Client says: " << buff << std::endl;
+
+} else {
+    std::cerr << "Receive failed or client disconnected." << std::endl;
+    
+}
+
         } catch (const std::exception& e) {
             std::cerr << "Error adding client: " << e.what() << std::endl;
         }
+
+
     }
+    
     return 0;
 }
 
