@@ -1,9 +1,16 @@
 #include "irc.hpp"
 
 // Constructor: Create a server socket
-Socket::Socket() {
+Socket::Socket()
+{
     sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock == -1) {
+	Channel general("#general");
+	channel = &general;
+	channel->addUser("Alice");
+    channel->addUser("Bob");
+    channel->setTopic("Bienvenue sur le canal général !");
+    if (sock == -1)
+	{
         throw std::runtime_error("Socket creation failed");
     }
 }
@@ -93,13 +100,11 @@ void Socket::receiveMessages() {
                 it = client_sockets.erase(it);  // Remove client socket
                 continue;
             }
-
             buffer[bytes_received] = '\0';  // Null-terminate the buffer
-            std::cout << "Client says: " << buffer << "\n";
+            // Process the message
+            int command = message_processing(client_sock, buffer);
 
-            // Handle client message or exit condition
-            if (strcmp(buffer, "exit") == 0) {
-                std::cout << "Client requested to close the connection.\n";
+            if (command == 1) {
                 close(client_sock);
                 it = client_sockets.erase(it);  // Remove client socket
                 continue;
@@ -108,6 +113,75 @@ void Socket::receiveMessages() {
         ++it;
     }
 }
+
+int hashCommand(const char* command) {
+    if (strncmp(command, "KICK", 4) == 0) return 1;
+    if (strncmp(command, "INVITE", 6) == 0) return 2;
+    if (strncmp(command, "TOPIC", 5) == 0) return 3;
+    if (strncmp(command, "MODE", 4) == 0) return 4;
+    return 0;
+}
+
+void Socket::mode_command(const char* buffer)
+{
+	for (int i = 1; buffer[i] != '\0'; i++)
+	{
+		if (buffer[i-1] == '-')
+		{
+			if (buffer[i] == 'i')
+				std::cout << "On Invite " << "\n";
+			else if (buffer[i] == 't')
+				std::cout << "Change topic " << "\n";
+			else if (buffer[i] == 'k')
+				std::cout << "Change Key " << "\n";
+			else if (buffer[i] == 'o')
+				std::cout << "Set user as Operator " << "\n";
+			else if (buffer[i] == 'l')
+				std::cout << "Change limite of user " << "\n";
+			else
+				std::cout << "Unkwown Mode command " << "\n";
+			return ;
+		}
+	}
+	std::cout << "Unspefied Mode commande, use : -i, -t, -k, -o, -l " << "\n";
+}
+
+int Socket::message_processing(int client_sock, const char* buffer)
+{
+    if (buffer[0] == '!')
+	{
+        int command = hashCommand(buffer + 1);
+
+        switch (command) {
+            case 1:
+                std::cout << "KICK USER " << client_sock << "\n";
+                break;
+            case 2:
+                std::cout << "INVITE USER " << client_sock << "\n";
+                break;
+            case 3:
+                std::cout << "SET TOPIC " << client_sock << "\n";
+                break;
+            case 4:
+                mode_command(buffer);
+                break;
+            default:
+                std::cout << "Unknown command from client " << client_sock << "\n";
+                break;
+        }
+    }
+	else
+	{
+		channel->broadcastMessage("client", buffer);
+		// Handle client message or exit condition
+		if (strcmp(buffer, "exit") == 0) {
+			std::cout << "Client requested to close the connection.\n";
+			return true;  // Signal that the connection should be closed
+		}
+	}
+	return false;  // Keep the connection open
+}
+
 
 // Get server socket
 int Socket::getSock() {
