@@ -8,7 +8,7 @@ CFLAGS = -g -Wall -Wextra -Werror
 
 SRC1 = client.cpp 
 
-SRC2 = serveur.cpp Socket.cpp User.cpp
+SRC2 = serveur.cpp Socket.cpp User.cpp Channel.cpp
 
 OBJ1 = $(SRC1:cpp=o)
 
