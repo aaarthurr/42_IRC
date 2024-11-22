@@ -1,52 +1,39 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Channel.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: arthur <arthur@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/20 13:38:30 by arthur            #+#    #+#             */
-/*   Updated: 2024/11/21 11:42:17 by arthur           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+#pragma once
 
-#pragma	once
-
-#include <string>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <signal.h>
+#include <iostream>
+#include <cstring>
+#include <netinet/in.h>
+#include <map> 
 #include <vector>
-#include <map>
-#include <set>
-#include "Socket.hpp"
+#include <poll.h>
 
-class Channel {
-private:
-    std::string name;                     // Nom du canal (ex: #general)
-    std::string topic;                    // Sujet du canal
-    std::set<std::string> users;          // Liste des utilisateurs dans le canal
-    std::map<char, bool> modes; // Modes du canal (par ex: +p, +m, +t)
+class User;
 
-public:
-    // Constructeur
-	Channel();
-    Channel(const std::string& channelName);
-	~Channel();
-
-    // Getter pour le nom du canal
-    const std::string& getName() const { return name; }
-
-    // Gestion des utilisateurs
-    void addUser(const std::string& user);
-    void removeUser(const std::string& user);
-    bool hasUser(const std::string& user) const;
-
-    // Gestion des modes
-    void setMode(char mode, bool value);
-    bool getMode(char mode) const;
-
-    // Gestion du sujet
-    void setTopic(const std::string& newTopic);
-    const std::string& getTopic() const;
-
-    // Méthode pour diffuser un message à tous les utilisateurs
-    void broadcastMessage(const std::string& sender, const std::string& message);
+class Channel
+{
+	private:
+		std::string				name;
+		std::string				topic;
+		int						_operator;
+		bool					is_on_invite;
+		std::map<int , User *>	client_list;
+	public:
+		Channel();
+		void					add_to_list(const User   *client, int i);
+		void					remove_from_list(int client);
+		void					set_topic(std::string topic);
+		void					set_invite_only(bool invite_only);
+		bool					is_invite_only();
+		int						get_operator();
+		std::string				get_name();
+		std::string				get_topic();
+		std::map<int , User *>	get_client_list();
+		void					send_to_all(std::string message);
+		~Channel();
 };
