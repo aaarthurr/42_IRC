@@ -17,18 +17,21 @@ class Channel;
 
 class User{
 	private:
-		std::string				nickname;
-		std::string				username;
-		std::string				fullname;
-		bool					authentification;
-		bool					_operator;
-		int						client_fd;
-		struct sockaddr_in 		client_adress;
+		std::string							nickname;
+		std::string							username;
+		std::string							fullname;
+		bool								authentification;
+		bool								_operator;
+		int									client_fd;
+		struct sockaddr_in 					client_adress;
 		std::map<std::string, Channel *>	channel_joined;
 	public:
 		std::string				get_nickname() const;
 		std::string				get_username() const;
 		std::string				get_fullname() const;
+		void					set_nickname();
+		void					set_username();
+		void					set_fullname();
 		bool					get_auth() const;
 		bool					get_operator() const;
 		int						get_client_fd() const;

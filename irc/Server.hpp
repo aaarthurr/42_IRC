@@ -12,6 +12,8 @@
 #include <map> 
 #include <vector>
 #include <poll.h>
+#include <unistd.h>
+
 
 class User;
 
@@ -43,6 +45,7 @@ class Server
 		void								terminate_ses(int client);
 		void								privmsg(std::string username, std::string messages);
 		void								handle_mod(std::vector<std::string> mod_request);
+		void								send_msg(int client_fd, std::string message);
 		int									get_socket() const;
 		struct sockaddr_in					get_server_adress() const;
 		std::string							get_password() const;
