@@ -1,4 +1,4 @@
-#include "Server.cpp"
+#include "Server.hpp"
 
 Server::Server(int port, std::string _password) : password(_password)
 {
@@ -69,37 +69,37 @@ void	Server::handle_mod(std::vector<std::string> mod_request)
 
 }
 
-int	Server::get_socket()
+int	Server::get_socket() const
 {
 
 }
 
-struct sockaddr_in	Server::get_server_adress()
+struct sockaddr_in	Server::get_server_adress() const
 {
 	
 }
 
-std::string	Server::get_password()
+std::string	Server::get_password() const
 {
 
 }
 
-std::map<int, User*>	Server::get_client_list()
+std::map<int, User*>	Server::get_client_list() const
 {
 
 }
 
-std::map<std::string, Channel *>	Server::get_channel_list()
+std::map<std::string, Channel *>	Server::get_channel_list() const
 {
 
 }
 
-std::vector<struct pollfd>	Server::get_fds()
+std::vector<struct pollfd>	Server::get_fds() const
 {
 
 }
 
-std::vector<std::string>	Server::get_unavilable_nick()
+std::vector<std::string>	Server::get_unavilable_nick() const
 {
 
 }

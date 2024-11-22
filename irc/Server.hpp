@@ -43,12 +43,12 @@ class Server
 		void								terminate_ses(int client);
 		void								privmsg(std::string username, std::string messages);
 		void								handle_mod(std::vector<std::string> mod_request);
-		int									get_socket(); const
-		struct sockaddr_in					get_server_adress(); const
-		std::string							get_password(); const
-		std::map<int, User*>				get_client_list(); const
-		std::map<std::string, Channel *>	get_channel_list(); const
-		std::vector<struct pollfd>			get_fds(); const
-		std::vector<std::string>			get_unavilable_nick(); const
+		int									get_socket() const;
+		struct sockaddr_in					get_server_adress() const;
+		std::string							get_password() const;
+		std::map<int, User*>				get_client_list() const;
+		std::map<std::string, Channel *>	get_channel_list() const;
+		std::vector<struct pollfd>			get_fds() const;
+		std::vector<std::string>			get_unavilable_nick() const;
 		~Server();
 };

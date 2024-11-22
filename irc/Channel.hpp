@@ -30,10 +30,10 @@ class Channel
 		void					set_topic(std::string topic);
 		void					set_invite_only(bool invite_only);
 		bool					is_invite_only();
-		int						get_operator(); const
-		std::string				get_name(); const
-		std::string				get_topic(); const
-		std::map<int , User *>	get_client_list(); const
+		int						get_operator() const;
+		std::string				get_name() const;
+		std::string				get_topic() const;
+		std::map<int , User *>	get_client_list() const;
 		void					send_to_all(std::string message);
 		~Channel();
 };
