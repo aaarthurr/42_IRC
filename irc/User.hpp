@@ -1,4 +1,5 @@
-#include <iostream>
+#pragma once
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -8,29 +9,32 @@
 #include <iostream>
 #include <cstring>
 #include <netinet/in.h>
-#include <poll.h>
+#include <map> 
 #include <vector>
+#include <poll.h>
 
-class User
-{
-    protected:
-        std::string username;
-        std::string nickname;
-        int         sock;
-    public:
-        User();
-        User(const User &usr);
-        User(std::string username, std::string nickname, int sock);
-        std::string getUsername();
-        std::string getNickname();
-        int         getClientSock();
-        static void sendText(std::string text, int dest_sock,  struct pollfd fds);
-        ~User();
-};
+class Channel;
 
-class Admin : public User
-{
+class User{
+	private:
+		std::string				nickname;
+		std::string				username;
+		std::string				fullname;
+		bool					authentification;
+		bool					_operator;
+		int						client_fd;
+		struct sockaddr_in 		client_adress;
+		std::map<std::string, Channel *>	channel_joined;
 	public:
-		Admin(User usr);
-		~Admin();
+		std::string				get_nickname(); const
+		std::string				get_username(); const
+		std::string				get_fullname(); const
+		bool					get_auth(); const
+		bool					get_operator(); const
+		int						get_client_fd(); const
+		struct sockaddr_in		get_client_adress(); const
+		std::vector<Channel *>	get_channel_list(); const
+		void					remove_channel(std::string channel_name);
+		void					add_channel(const Channel *channel);
+		bool					is_joined(std::string channel);
 };

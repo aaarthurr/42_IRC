@@ -1,42 +1,55 @@
-NAME2 = ircserv
+NAME = cub3d
 
-NAME1 = irclient
+CC = cc
 
-CC = c++ -std=c++98
+CFLAGS += -g -Wall -Wextra -I/usr/include -Imlx_linux -IInclude  -Imlx
 
-CFLAGS = -g -Wall -Wextra -Werror
+HEADER = cube3d.h
 
-SRC1 = client.cpp 
+LIB = -Lmlx_linux -lmlx_Linux -lXext -lX11 -lm  -IO3 -lz -L/usr/lib
 
-SRC2 = serveur.cpp Socket.cpp User.cpp
+ERROR = check_error check_error_tools check_error_tools2
 
-OBJ1 = $(SRC1:cpp=o)
+GNL = get_next_line gnl_utils
 
-OBJ2 = $(SRC2:cpp=o)
+MAIN = main render render2 render3 render4 render5 input input2
 
-all: $(NAME1) $(NAME2)
+INITIALIZATION = parse_map init_data init_mlx_data init_map_data init_trace_data init_bonus_data init_bonus_data2 parse_map_tools parse_map_tools2
 
-$(NAME1): $(OBJ1)
-	@echo "\033[38;5;213mircCompiled"
-	@$(CC) $(CFLAGS) -o $(NAME1) $(OBJ1)
+TOOLS = exit_manager tools debug gnl_tools render_tools ft_strtrim
 
-$(NAME2): $(OBJ2)
-	@$(CC) $(CFLAGS) -o $(NAME2) $(OBJ2)
-	@echo "\n\033[1;31m./irc to execute program\n"
+BONUSES = minimap1 minimap2 minimap3 minimap4 doors collectibles ennemies sound cinematic1 cinematic2 cinematic3 cinematic4
 
+SRC = $(addsuffix .c, $(addprefix src/GNL/, $(GNL)))\
+		$(addsuffix .c, $(addprefix src/Initialization/, $(INITIALIZATION)))\
+		$(addsuffix .c, $(addprefix src/Tools/, $(TOOLS)))\
+		$(addsuffix .c, $(addprefix src/Main/, $(MAIN)))\
+		$(addsuffix .c, $(addprefix src/Error/, $(ERROR)))\
+		$(addsuffix .c, $(addprefix src/Bonuses/, $(BONUSES)))\
 
-%.o: %.cpp
-	@printf "\033[38;5;213mGenerating irc objects... %-33.33s\r\n" $@
-	@$(CC) $(CFLAGS) -c $< -o $@
+OBJ = $(SRC:c=o)
+
+all: $(NAME)
+
+$(NAME): $(OBJ)
+	@echo "\033[0;32mCube3d Compiled !"
+	@$(CC) $(CFLAGS)  $(OBJ) $(LIB) -o $(NAME)
+	@echo "\n\033[0mCube3d to execute the program !"
+
+%.o: %.c
+	@printf "\033[0;33mGenerating Cube3d objects... %-33.33s\r\n" $@
+	@${CC} ${CFLAGS} -c $< -o $@
 
 clean:
-	@echo "\n\033[1;31mRemoving binaries..."
-	@rm -f $(OBJ1) $(OBJ2)
+	@echo "\nRemoving binaries..."
+	@rm -f $(OBJ)
 	@echo "\033[0m"
 
-fclean: clean
-	@echo "\n\033[1;31mDeleting executable..."
-	@rm -f $(NAME1) $(NAME2)
+fclean:
+	@echo "Deleting objects..."
+	@rm -f $(OBJ)
+	@echo "\nDeleting executable..."
+	@rm -f $(NAME)
 	@echo "\033[0m"
 
 re: fclean all
