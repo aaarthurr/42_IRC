@@ -20,6 +20,8 @@ class Channel;
 class Server
 {
 	private:
+		int									socket; 
+   		struct sockaddr_in 					server_address;
 		std::string							password;
 		std::map<int, User*>				client_list; 
 		std::map<std::string, Channel *>	channel_list;
@@ -28,8 +30,8 @@ class Server
 		
 	public:
 		Server(int port, std::string _password);
-		std::string							parse_request(std::string request); //go with handle_request
 		void								start_server(void);
+		std::string							parse_request(std::string request); //go with handle_request
 		void								handle_request(void);//go with parse request
 		void								add_fd(int client_fd);
 		void								remove_fd(int client);
@@ -41,10 +43,12 @@ class Server
 		void								terminate_ses(int client);
 		void								privmsg(std::string username, std::string messages);
 		void								handle_mod(std::vector<std::string> mod_request);
-		std::string							get_password();
-		std::map<int, User*>				get_client_list();
-		std::map<std::string, Channel *>	get_channel_list();
-		std::vector<struct pollfd>			get_fds();
-		std::vector<std::string>			get_unavilable_nick();
+		int									get_socket(); const
+		struct sockaddr_in					get_server_adress(); const
+		std::string							get_password(); const
+		std::map<int, User*>				get_client_list(); const
+		std::map<std::string, Channel *>	get_channel_list(); const
+		std::vector<struct pollfd>			get_fds(); const
+		std::vector<std::string>			get_unavilable_nick(); const
 		~Server();
 };
