@@ -71,7 +71,7 @@ void	send_msg(int client_fd, std::string message)
 
 void	Server::set_nickname(std::string nickname, int client)
 {
-	
+	client_list[client]-> ;
 }
 
 void	Server::set_username(std::string username_str, int client)
