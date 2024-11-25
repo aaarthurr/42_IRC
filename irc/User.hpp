@@ -26,11 +26,12 @@ class User{
 		struct sockaddr_in 					client_adress;
 		std::map<std::string, Channel *>	channel_joined;
 	public:
+		User(int client_fd, struct sockaddr_in client_adress);
 		std::string				get_nickname() const;
 		std::string				get_username() const;
 		std::string				get_fullname() const;
-		void					set_nickname();
-		void					set_username();
+		void					set_nickname(std::string _nickname);
+		void					set_username(std::vector<char *> _username);
 		void					set_fullname();
 		bool					get_auth() const;
 		bool					get_operator() const;

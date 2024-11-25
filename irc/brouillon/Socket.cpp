@@ -38,7 +38,7 @@ void Socket::connectSocket(int port) {
 }
 
 /*-----------------------------------------------------------------------------------------*/
-/*
+
 void Socket::handleNewConnection() {
     struct sockaddr_in client_address;
     socklen_t client_len = sizeof(client_address);
@@ -92,7 +92,7 @@ void Socket::handleNewConnection() {
        			User::sendText("Enter your text:\n", new_client_sock, client_pollfd);
 
 }
-*/
+
 
 /*-----------------------------------------------------------------------------------------*/
 
