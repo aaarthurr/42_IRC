@@ -35,11 +35,11 @@ class Server
 		
 	public:
 		Server(int port, std::string _password);
-		void								start_server(void);
-		std::vector<char *>					parse_request(char *buffer, const char *delim, int words);
-		void								handle_request(void);//go with parse request
+		void								start_server(void);//DONE
+		std::vector<char *>					parse_request(char *buffer, const char *delim, int words);//DONE
+		void								handle_request(void);//DONE
 		void								add_client(void);//DONE
-		void								remove_client(std::map<int, User *>::iterator it, int x);
+		void								remove_client(std::map<int, User *>::iterator it, int x);//DONE
 		void								auth_client(int client_fd, std::string password);
 		void								set_nickname(std::string nickname_str, int client);//DONE
 		void								set_username(std::string username_str, int client);//DONE
@@ -48,13 +48,13 @@ class Server
 		void								terminate_ses(int client_fd);
 		void								privmsg(std::string username, std::string messages);
 		void								handle_mod(std::vector<std::string> mod_request);
-		void								send_msg(int client_fd, std::string message);
-		int									get_socket() const;
-		struct sockaddr_in					get_server_adress() const;
-		std::string							get_password() const;
-		std::map<int, User*>				get_client_list() const;
-		std::map<std::string, Channel *>	get_channel_list() const;
-		std::vector<struct pollfd>			get_fds() const;
-		std::set<std::string>				get_unavilable_nick() const;
+		void								send_msg(int client_fd, std::string message);//DONE
+		int									get_socket() const;//DONE
+		struct sockaddr_in					get_server_adress() const;//DONE
+		std::string							get_password() const;//DONE
+		std::map<int, User*>				get_client_list() const;//DONE
+		std::map<std::string, Channel *>	get_channel_list() const;//DONE
+		std::vector<struct pollfd>			get_fds() const;//DONE
+		std::set<std::string>				get_unavilable_nick() const;//DONE
 		~Server();
 };
