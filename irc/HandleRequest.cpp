@@ -88,13 +88,13 @@ void    Server::handle_request(void)
 							set_username(buffer, it->first);
 							break ;
 						case 7:
-							std::cout << "PASS" << it->first << "\n";
+							auth_client(it->first, buffer);
 							break ;
 						case 8:
 							std::cout << "PRIVMSG" << it->first << "\n";
 							break ;
 						case 9:
-							send_msg(it->first, "CAP * LS :\r\n");
+							send_msg(it->first, "CAP * LS :");
 							break ;
 						case 10:
 							remove_client(it, x);
@@ -103,8 +103,8 @@ void    Server::handle_request(void)
 						{
 							if (strncmp("CAP END", buffer, 7))
 							{
-								std::cout << "IRC: Invalid Command: " << buffer << std::endl;
-								send_msg(it->first, "IRC Invalid Command /r/n");
+								std::cout << "IRC Invalid Command: " << buffer << std::endl;
+								send_msg(it->first, "IRC Invalid Command ");
 							}
 							break ;
 						}

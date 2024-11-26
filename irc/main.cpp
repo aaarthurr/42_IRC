@@ -1,5 +1,4 @@
 #include "Server.hpp"
-int is_auth_character(const std::string& str);
 
 int	main(int argc, char **argv)
 {

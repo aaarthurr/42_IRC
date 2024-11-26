@@ -22,7 +22,7 @@ $(NAME1): $(OBJ1)
 
 $(NAME2): $(OBJ2)
 	@$(CC) $(CFLAGS) -o $(NAME2) $(OBJ2)
-	@echo "\n\033[1;31m./irc to execute program\n"
+	@echo "\n\033[1;31m./irc to execute program\r\n"
 
 
 %.o: %.cpp

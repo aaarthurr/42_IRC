@@ -4,6 +4,7 @@ User::User(int client_fd, struct sockaddr_in client_adress)
 {
 	this->client_fd = client_fd;
 	this->client_adress = client_adress;
+	this->authentification = false;
 }
 
 std::string	User::get_nickname() const
@@ -25,6 +26,17 @@ int	User::get_client_fd() const
 {
 	return (client_fd);
 }
+
+void	User::set_auth(bool auth)
+{
+	this->authentification = auth;
+}
+
+bool	User::get_auth() const
+{
+	return(authentification);
+}
+
 
 void	User::set_username(std::vector<char *> _username)
 {
