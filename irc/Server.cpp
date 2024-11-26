@@ -27,7 +27,7 @@ void	Server::start_server(void)
         throw std::runtime_error("Binding failed");
     }
 
-    if (listen(_socket, 5) == -1) {
+    if (listen(_socket, 5) == -1) { // need to be revised (number 5)
         close(_socket);
         throw std::runtime_error("Listening failed");
     }
@@ -88,6 +88,7 @@ void	Server::auth_client(int client_fd, std::string _password)
 
 void	Server::send_msg(int client_fd, std::string message)
 {
+    
     int temp = 0;
 
     message.append("\r\n");
@@ -187,16 +188,40 @@ void	Server::quit_channel(std::string channel_name, int client)
 */
 void	Server::privmsg(int client_fd, std::string demand)
 {
+    if (!client_list[client_fd]->get_auth())
+    {
+        send_msg(client_fd, "IRC Error: you need to be authenticated first");
+        return ;
+    }
     std::vector<char *> buffer = parse_request((char *)demand.c_str(), " :\r\n", 3);
+   
     if (buffer.size() != 3)
     {
-        send_msg(client_fd, "IRC ")
+        send_msg(client_fd, "IRC Error: not enough parameter");
+        return ;
     }
-    for (std::map<int, User *>::iterator it = client_list.begin(); strcmp(it->second->get_nickname().c_str(), nickname.c_str()); it++)
-    {
+    std::string nickname = buffer[1];
 
+    std::string msg = buffer[2];
+    std::map<int, User *>::iterator it = client_list.begin();
+
+    for (; it != client_list.end() && strcmp(it->second->get_nickname().c_str(), nickname.c_str());)
+    {
+        it++;
     }
-    send_msg()
+    if (it == client_list.end())
+    {
+        send_msg(client_fd, "IRC Error: can't find user");
+        return ;
+    }
+    if (!client_list[it->first]->get_auth())
+    {
+        send_msg(client_fd, "IRC Error: receptor needs to be authenticated first");
+        return ;
+    }
+    nickname.append(" : ");
+    msg.insert(0, nickname);
+    send_msg(it->first, msg);
 }
 /*
 void	Server::handle_mod(std::vector<std::string> mod_request)

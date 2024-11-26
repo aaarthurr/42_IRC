@@ -49,6 +49,8 @@ class Server
 		void								handle_mod(std::vector<std::string> mod_request);
 		void								send_msg(int client_fd, std::string message);//DONE
 		int									get_socket() const;//DONE
+		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);
+		std::string							convert_buffer(char	*command);
 		struct sockaddr_in					get_server_adress() const;//DONE
 		std::string							get_password() const;//DONE
 		std::map<int, User*>				get_client_list() const;//DONE
