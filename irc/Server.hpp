@@ -17,9 +17,7 @@
 #include <sstream>
 #include <exception>
 #include <cerrno>
-#include "User.hpp"
-
-class Channel;
+#include "Channel.hpp"
 
 class Server
 {
@@ -39,18 +37,20 @@ class Server
 		std::vector<char *>					parse_request(char *buffer, const char *delim, int words);//DONE
 		void								handle_request(void);//DONE
 		void								add_client(void);//DONE
+		void								kick_user(std::string command, int client_fd);
+		void								invite_user(std::string command, int client_fd);
+		void								set_topic(std::string command, int client_fd);
 		void								remove_client(std::map<int, User *>::iterator it, int x);//DONE
 		void								auth_client(int client_fd, std::string _password);
-		void								set_nickname(std::string nickname_str, int client);//DONE
-		void								set_username(std::string username_str, int client);//DONE
-		void								join_channel(std::string channel_name, int client);
-		void								quit_channel(std::string channel_name, int client);//if there is no more client in this channel, delete it. To be used with remove_from_list() -see channel.hpp- . Can be used to kick people too. What happen when the operator leave the channel?
-		void								privmsg(int client_fd, std::string demand);
+		void								set_nickname(std::string nickname_str, int client_fd);//DONE
+		void								set_username(std::string username_str, int client_fd);//DONE
+		void								join_channel(std::string command, int client_fd);//NEED TO BE TESTED
+		void								quit_channel(std::string channel_name, int client_fd);//if there is no more client in this channel, delete it. To be used with remove_from_list() -see channel.hpp- . Can be used to kick people too. What happen when the operator leave the channel?
+		void								privmsg(int client_fd, std::string demand); //DONE
 		void								handle_mod(std::vector<std::string> mod_request);
 		void								send_msg(int client_fd, std::string message);//DONE
 		int									get_socket() const;//DONE
-		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);
-		std::string							convert_buffer(char	*command);
+		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);//DONE
 		struct sockaddr_in					get_server_adress() const;//DONE
 		std::string							get_password() const;//DONE
 		std::map<int, User*>				get_client_list() const;//DONE

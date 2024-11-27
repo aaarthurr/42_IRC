@@ -56,7 +56,7 @@ void	Server::add_client(void)
 
 void	Server::remove_client(std::map<int, User *>::iterator it, int x)
 {
-    std::cout << "Client " << it->second->get_nickname() << " requested to close the connection." << std::endl;
+    std::cout << "Client " << it->second->get_nickname() << " requested to close the connection." << std::endl; // move that to the user destructor
     unavailable_nick.erase(it->second->get_nickname());
     std::vector <struct pollfd>::iterator it2 = fds.begin();
     std::advance(it2, x);
@@ -88,7 +88,6 @@ void	Server::auth_client(int client_fd, std::string _password)
 
 void	Server::send_msg(int client_fd, std::string message)
 {
-    
     int temp = 0;
 
     message.append("\r\n");
@@ -145,10 +144,7 @@ void	Server::set_nickname(std::string nickname_str, int client_fd)
     unavailable_nick.erase(client_list[client_fd]->get_nickname());
     if (!client_list[client_fd]->get_nickname().empty())
     {
-        std::string msg = "IRC Nickname successfully changed from ";
-        msg.append(client_list[client_fd]->get_nickname());
-        msg.append(" to ");
-        msg.append(str);
+        std::string msg = "IRC Nickname successfully changed from " + client_list[client_fd]->get_nickname() + " to " + str;
         send_msg(client_fd, msg);
     }
     client_list[client_fd]->set_nickname(str);
@@ -170,22 +166,74 @@ void	Server::set_username(std::string username_str, int client_fd)
         return ;
     }
     client_list[client_fd]->set_username(buffer);
-    std::cout << "USER has been setup with:" << std::endl << "Nickname: " 
-                << client_list[client_fd]->get_nickname() << std::endl
-                << "Username : " << client_list[client_fd]->get_username() << std::endl
-                << "Fullname : " << client_list[client_fd]->get_fullname() << std::endl;
-}
-/*
-void	Server::join_channel(std::string channel_name, int client)
-{
-
+    //std::cout << "USER has been setup with:" << std::endl << "Nickname: " 
+    //            << client_list[client_fd]->get_nickname() << std::endl
+    //            << "Username : " << client_list[client_fd]->get_username() << std::endl
+    //            << "Fullname : " << client_list[client_fd]->get_fullname() << std::endl;
 }
 
-void	Server::quit_channel(std::string channel_name, int client)
+/*void	Server::join_channel(std::string command, int client_fd)need to handle multiple channel
 {
-	}//if there is no more client in this channel, delete it. To be used with remove_from_list() -see channel.hpp- . Can be used to kick people too. What happen when the operator leave the channel?
+    std::vector<char *> buffer = parse_request((char *)command.c_str(), " \r\n", 2);
+    std::string channel_name = buffer[1];
+    std::map<std::string , Channel *>::iterator it = channel_list.find(channel_name);
+    //------if created--------
+        //set operator
+        //name max 200 ch beginning by & or # -search why- , no space or ctrlg or ,
+        //can join multiple channel by separating them with commas
+    if (channel_list.empty() || it == channel_list.end())
+    {
+        if (channel_name[0] != '#')
+            channel_name.insert(channel_name.begin(), '#');
+        Channel *chat = new Channel(channel_name, client_list[client_fd]->get_nickname());
+        channel_list[channel_name] = chat;
+        //msg at the creation of the channel ?
+        return ;
+    }
+    else
+    {
+        if (it->second->is_invite_only())
+        {
+            std::string msg = "IRC Can't join channel " + it->first + " : Channel is invite only";
+            send_msg(client_fd, msg);
+        }
+        else if (it->second->get_client_list().find(client_fd) != it->second->get_client_list().end())
+        {
+            std::string msg = "IRC Can't join channel " + it->first + " : you already joined this channel";
+            send_msg(client_fd, msg);
+        }
+        else
+        {
+            std::string msg = it->first + " User " + client_list[client_fd]->get_nickname() + " just joined this channel !";
+            it->second->add_to_list(client_list[client_fd], client_fd);
+            it->second->send_to_all(msg);
+            std::string msg2 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " : " + it->second->get_topic();
+            send_msg(client_fd, msg2);
+            send_msg(client_fd, it->second->get_client_str());
+        }
+    }
+    //------if not created-----
+        //broadcast to all user if not created
+        //if it's invite only, do not join
+        //send the topic of the channel
+        //:server-name 332 nickname #channel-name :<topic>
+        //:server-name 353 nickname = #channel-name :@user1 +user2 user3
+}*/
 
-*/
+void	Server::quit_channel(std::string command, int client_fd)// need to handle multiple channels
+{
+    std::vector<char *> buffer = parse_request((char *)command.c_str(), " \r\n", 3);
+
+    std::string channel_name = buffer[1];
+    std::string message = buffer[2];
+
+
+    channel_list[channel_name]->remove_from_list(client_fd);
+    if (!message.empty())
+        channel_list[channel_name]->send_to_all(message);
+
+}//if there is no more client in this channel, delete it. To be used with remove_from_list() -see channel.hpp- . Can be used to kick people too. What happen when the operator leave the channel?
+
 void	Server::privmsg(int client_fd, std::string demand)
 {
     if (!client_list[client_fd]->get_auth())
@@ -193,22 +241,19 @@ void	Server::privmsg(int client_fd, std::string demand)
         send_msg(client_fd, "IRC Error: you need to be authenticated first");
         return ;
     }
-    std::vector<char *> buffer = parse_request((char *)demand.c_str(), " :\r\n", 3);
+    std::vector<char *> buffer = parse_request((char *)demand.c_str(), " \r\n", 3);
    
-    if (buffer.size() != 3)
+    if (buffer.size() < 3)
     {
         send_msg(client_fd, "IRC Error: not enough parameter");
         return ;
     }
-    std::string nickname = buffer[1];
 
     std::string msg = buffer[2];
     std::map<int, User *>::iterator it = client_list.begin();
 
-    for (; it != client_list.end() && strcmp(it->second->get_nickname().c_str(), nickname.c_str());)
-    {
+    for (; it != client_list.end() && strcmp(it->second->get_nickname().c_str(), buffer[1]);)
         it++;
-    }
     if (it == client_list.end())
     {
         send_msg(client_fd, "IRC Error: can't find user");
@@ -219,8 +264,11 @@ void	Server::privmsg(int client_fd, std::string demand)
         send_msg(client_fd, "IRC Error: receptor needs to be authenticated first");
         return ;
     }
-    nickname.append(" : ");
+    std::string nickname = client_list[client_fd]->get_nickname();
+    nickname.append(" ");
     msg.insert(0, nickname);
+    while (msg.find("\n") != std::string::npos)
+        msg.erase(msg.find("\n"), 1);
     send_msg(it->first, msg);
 }
 /*

@@ -33,13 +33,15 @@ void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x
 	std::cout << "client :" << buffer << std::endl;
 	
 	if (strncmp(buffer, "KICK", 4) == 0)
-			std::cout << "KICK USER " << it->first << "\n";
+			std::cout << "KICK USER " << it->second->get_nickname() << "\n";
 	else if (strncmp(buffer, "INVITE", 6) == 0)
-			std::cout << "INVITE USER " << it->first << "\n";
+			std::cout << "INVITE USER " << it->second->get_nickname() << "\n";
 	else if (strncmp(buffer, "TOPIC", 5) == 0)
-			std::cout << "SET TOPIC " << it->first << "\n";
+			std::cout << "SET TOPIC " << it->second->get_nickname() << "\n";
 	else if (strncmp(buffer, "MODE", 4) == 0)
-			std::cout << "MODE SETUP " << it->first << "\n";
+			std::cout << "MODE SETUP " << it->second->get_nickname() << "\n";
+	else if (strncmp(buffer, "PART", 4) == 0)
+			std::cout << "PARTING... " << it->second->get_nickname() << "\n";
 	else if (strncmp(buffer, "NICK", 4) == 0)
 			set_nickname(buffer, it->first);
 	else if (strncmp(buffer, "USER", 4) == 0)
@@ -50,6 +52,8 @@ void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x
 			privmsg(it->first, buffer);
 	else if (strncmp(buffer, "CAP LS 302", 10) == 0)
 			send_msg(it->first, "CAP * LS :");
+	else if (strncmp(buffer, "JOIN", 4) == 0)
+		std::cout << "JOIN" << std::endl;
 	else if (strncmp(buffer, "QUIT", 4) == 0)
 			remove_client(it, x);
 	else if (strncmp("CAP END", buffer, 7))
