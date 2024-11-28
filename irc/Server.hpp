@@ -17,8 +17,8 @@
 #include <sstream>
 #include <exception>
 #include <cerrno>
+#include <algorithm>
 #include "Channel.hpp"
-
 class Server
 {
 	private:
@@ -45,8 +45,9 @@ class Server
 		void								set_nickname(std::string nickname_str, int client_fd);//DONE
 		void								set_username(std::string username_str, int client_fd);//DONE
 		void								join_channel(std::string command, int client_fd);//NEED TO BE TESTED
-		void								quit_channel(std::string channel_name, int client_fd);//if there is no more client in this channel, delete it. To be used with remove_from_list() -see channel.hpp- . Can be used to kick people too. What happen when the operator leave the channel?
+		void								quit_channel(std::string channel_name, int client_fd);//NEED TO BE TESTED
 		void								privmsg(int client_fd, std::string demand); //DONE
+		void								channel_msg(int client_fd, std::string channel_name, std::string msg);
 		void								handle_mod(std::vector<std::string> mod_request);
 		void								send_msg(int client_fd, std::string message);//DONE
 		int									get_socket() const;//DONE
