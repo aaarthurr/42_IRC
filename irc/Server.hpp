@@ -28,7 +28,7 @@ class Server
 		int									port;
    		struct sockaddr_in 					server_address;
 		std::string							password;
-		std::map<int, User*>				client_list; 
+		std::map<int, User*>				client_list;
 		std::map<std::string, Channel *>	channel_list;
 		std::vector<struct pollfd>			fds;
 		std::set<std::string>				unavailable_nick;
@@ -56,4 +56,11 @@ class Server
 		std::vector<struct pollfd>			get_fds() const;//DONE
 		std::set<std::string>				get_unavilable_nick() const;//DONE
 		~Server();
+
+		/*----Nucleocherrry's functions-------*/
+		int									get_client_fd_by_nickname(std::string _nickname);
+		int									get_client_fd_by_nickname(char *_nickname);
+
+
+		int									kick_user(Channel actual, User clientToExclude);
 };

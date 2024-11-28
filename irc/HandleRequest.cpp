@@ -61,10 +61,25 @@ void    Server::handle_request(void)
 					std::map<int, User *>::iterator it = client_list.find(fds[x].fd);
 					memset(buffer, 0, 1024);
 					ssize_t bytes_received = recv(it->first, buffer, 1024, 0);
+					it->second->user_buffer(buffer);
+					if (it->second->get_userBuffer().find('\n') == std::string::npos)
+						continue;
+					else if (it->second->get_userBuffer().size())
+					{
+						size_t totalSize = it->second->get_userBuffer().size() + std::strlen(buffer);
+						if (totalSize >= 1024)
+						{
+							it->second->get_userBuffer().clear();
+							continue;
+						}
+						std::strncpy(buffer, it->second->get_userBuffer().c_str(), it->second->get_userBuffer().size());
+						std::strncpy(buffer + it->second->get_userBuffer().size(), buffer + it->second->get_userBuffer().size(), 1024 - it->second->get_userBuffer().size());
+						it->second->get_userBuffer().clear();
+					}
 					if (bytes_received == -1)
 					{
 						std::cerr << "recv() error" << std::endl;
-						return ;
+						return ; //throw error
 					}
 					int command = hashCommand(buffer);
 					std::cout << "client :" << buffer << std::endl;

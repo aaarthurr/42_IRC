@@ -187,16 +187,7 @@ void	Server::quit_channel(std::string channel_name, int client)
 */
 void	Server::privmsg(int client_fd, std::string demand)
 {
-    std::vector<char *> buffer = parse_request((char *)demand.c_str(), " :\r\n", 3);
-    if (buffer.size() != 3)
-    {
-        send_msg(client_fd, "IRC ")
-    }
-    for (std::map<int, User *>::iterator it = client_list.begin(); strcmp(it->second->get_nickname().c_str(), nickname.c_str()); it++)
-    {
-
-    }
-    send_msg()
+	std::cout << "PRIVMSG to " << client_fd << " with the message " << demand << std::endl;
 }
 /*
 void	Server::handle_mod(std::vector<std::string> mod_request)
@@ -251,4 +242,150 @@ std::set<std::string>	Server::get_unavilable_nick() const
 Server::~Server()
 {
 
+}
+
+
+
+/*-------------Nucleocherry's functions-------------*/
+
+int					Server::get_client_fd_by_nickname(std::string _nickname)
+{
+	for (std::map<int, User>::iterator it; it != client_list.end(); it++)
+	{
+		if (it->second.get_nickname == _nickname)
+		{
+			return (it->second.get_client_fd());
+		}
+	}
+	return (-1);
+}
+
+int					Server::get_client_fd_by_nickname(char *tempNickname)
+{
+	std::string _nickname(tempNickname);
+	for (std::map<int, User>::iterator it; it != client_list.end(); it++)
+	{
+		if (it->second.get_nickname == tempNickname)
+		{
+			return (it->second.get_client_fd());
+		}
+		
+	}
+	return (-1);
+}
+
+void				Server::kick_user(int client_fd, std::string demand)
+{
+	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+	buffer.erase(buffer.begin());
+
+
+	if (username_str.empty())
+    {
+        send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
+        return ;
+    }
+
+
+	int kickedClient = get_client_fd_by_nickname(buffer[1]);
+	if (kickedClient == -1/*cherche si il existe*/)
+    {
+        send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_DOESNOTEXIST");
+        return ;
+    }
+
+	if (channel_list[buffer[0]]->get_operator() == client_list[client_fd]->get_client_fd())
+	{
+		if (client_list[client_fd]->get_client_fd() == kickedClient)
+		{
+			std::cout << "Op cant kick himself it would delete the whole server" std::endl;
+			return ;
+		}
+		else
+			channel_list[buffer[0]]->remove_from_list(kickedClient);
+	}
+	else
+		std::cout << kickedCLient << " Isnt the operator" << std::endl;//std::cout << "" << std::endl;  /\/\/\/\/\ message a envoyer ici -TOEND
+}
+
+void				Server::invite_user(int client_fd, std::string demand)
+{
+	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+	buffer.erase(buffer.begin());
+
+	if (username_str.empty())
+    {
+        send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
+        return ;
+    }
+
+	int invitedClient = get_client_fd_by_nickname(buffer[0]); // IS ALSO JUST A CAST
+	std::string channelInvited_name(buffer[1]); //IS JUST A CAST
+
+	if (InvitedClient == -1/*cherche si il existe*/)
+    {
+        send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_DOESNOTEXIST");
+        return ;
+    }
+
+	for (std::map<int, User>::iterator itUser = channel_list[channelInvited_name].client_list.begin(); itUser != channel_list[channelInvited_name].client_list.end(); itUser++)
+	{
+		if (itUser->second.get_client_fd() == invitedClient)
+			break;
+	}
+
+	for (std::map<int, User>::iterator itUserinvited = channel_list[channelInvited_name].client_list.begin(); itUserinvited != channel_list[channelInvited_name].client_list.end(); itUserinvited++)
+	{
+		if (itUserinvited->second.get_client_fd() == invitedClient)
+			break;
+	}
+
+	for (std::map<std::string, Channel>::iterator itChan; itChan != channel_list.end(); itChan++)
+	{
+		if (itChan->second.get_name() == channelInvited_name)
+		{
+			if (itUser->second.is_joined(channelInvited_name) == false)
+			{
+				std::cout <<  "No right to invite people in channel " << buffer[1] << std::endl;
+				return ;
+			}
+			else if (itUserinvited->second.is_joined(channelInvited_name) == false)
+			{
+				std::cout << buffer[0] << " is already in the channel " << buffer[1] << std::endl;
+				return ;
+			}
+			else
+			{
+				itChan->second.add_to_list(itUserinvited->second, 0);
+				std::cout << "invited succesfully !" < std::endl;
+			}
+			return ;
+		}
+	}
+	std::cout << "Channel not found." << std::endl;
+}
+
+void	Server::change_topic(int client_fd, std::string demand)
+{
+	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+	buffer.erase(buffer.begin());
+
+	std::string chan_name(buffer[1]);
+
+	for (std::map<std::string, Channel>::iterator itChan; itChan != channel_list.end(); itChan++)
+	{
+		if (itChan->second.get_name() == chan_name)
+		{
+			if (client_fd == itChan->second.get_operator())
+			{
+				set_topic(buffer[0]);
+			}
+			else
+			{
+				std::cout << "Doesnt have the right to change the topic" << std::endl; // -TODO
+			}
+			return ;
+		}
+		std::cout << "this channel doest exist try another" << std::endl; // -TODO
+	}
 }
