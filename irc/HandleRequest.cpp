@@ -83,12 +83,69 @@ void    Server::handle_request(void)
 					std::map<int, User *>::iterator it = client_list.find(fds[x].fd);
 					memset(buffer, 0, 1024);
 					ssize_t bytes_received = recv(it->first, buffer, 1023, 0);
+					it->second->user_buffer(buffer);
+					if (it->second->get_userBuffer().find('\n') == std::string::npos)
+						continue;
+					else if (it->second->get_userBuffer().size())
+					{
+						size_t totalSize = it->second->get_userBuffer().size() + std::strlen(buffer);
+						if (totalSize >= 1024)
+						{
+							it->second->get_userBuffer().clear();
+							continue;
+						}
+						std::strncpy(buffer, it->second->get_userBuffer().c_str(), it->second->get_userBuffer().size());
+						std::strncpy(buffer + it->second->get_userBuffer().size(), buffer + it->second->get_userBuffer().size(), 1024 - it->second->get_userBuffer().size());
+						it->second->get_userBuffer().clear();
+					}
 					if (bytes_received == -1)
 					{
 						std::cerr << "recv() error" << std::endl;
-						return ;
+						return ; //throw error
 					}
-					hashCommand(buffer, it, x); // redo parsing
+					int command = hashCommand(buffer);
+					std::cout << "client :" << buffer << std::endl;
+					switch (command) {
+						case 1:
+							std::cout << "KICK USER " << it->first << "\n";
+							break ;
+						case 2:
+							std::cout << "INVITE USER " << it->first << "\n";
+							break ;
+						case 3:
+							std::cout << "SET TOPIC " << it->first << "\n";
+							break ;
+						case 4:
+							std::cout << "MODE SETUP " << it->first << "\n";
+							break ;
+						case 5:
+							set_nickname(buffer, it->first);
+							break ;
+						case 6:
+							set_username(buffer, it->first);
+							break ;
+						case 7:
+							auth_client(it->first, buffer);
+							break ;
+						case 8:
+							std::cout << "PRIVMSG" << it->first << "\n";
+							break ;
+						case 9:
+							send_msg(it->first, "CAP * LS :");
+							break ;
+						case 10:
+							remove_client(it, x);
+							break ;
+						case 11:
+						{
+							if (strncmp("CAP END", buffer, 7))
+							{
+								std::cout << "IRC Invalid Command: " << buffer << std::endl;
+								send_msg(it->first, "IRC Invalid Command ");
+							}
+							break ;
+						}
+					}
 				}
 			}
 		}

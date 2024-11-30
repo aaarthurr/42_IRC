@@ -12,8 +12,8 @@
 #include <map> 
 #include <vector>
 #include <poll.h>
-#include "User.hpp"
 
+#include "User.hpp"
 
 class Channel
 {
@@ -25,9 +25,8 @@ class Channel
 		std::map<int , User *>	client_list;
 	public:
 		Channel();
-		Channel(std::string name, std::string _operator);
-		void					add_to_list(const User   *client, int client_fd);
-		void					remove_from_list(int client);
+		void					add_to_list(const User   *client, int i);
+		void					remove_from_list(User *client);
 		void					set_topic(std::string topic);
 		void					set_invite_only(bool invite_only);
 		bool					is_invite_only();
@@ -38,4 +37,9 @@ class Channel
 		std::map<int , User *>	get_client_list() const;
 		void					send_to_all(std::string message);
 		~Channel();
+
+		/*-----Nucleocherry's functions-------*/
+
+		void	kick_everyone();
+		
 };
