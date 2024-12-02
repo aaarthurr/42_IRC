@@ -9,7 +9,9 @@ void	Server::channel_msg(int client_fd, std::string channel_name, std::string ms
         }
     std::string nickname = client_list[client_fd]->get_nickname();
     if (client_list[client_fd]->get_operator())
+    {
         nickname.insert(0, "@");
+    }
 	std::string to_send = nickname + " : " + msg;
     channel_list[channel_name]->send_to_all(to_send);
 }

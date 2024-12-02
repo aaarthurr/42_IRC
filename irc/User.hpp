@@ -12,8 +12,8 @@
 #include <map> 
 #include <vector>
 #include <poll.h>
-#include "Channel.hpp"
 
+class Channel;
 
 class User
 {
@@ -36,34 +36,37 @@ class User
 
 	/*------Setters-----*/
 		
-		void					set_auth(bool auth);
-		void					set_nickname(std::string _nickname);
-		void					set_username(std::vector<char *> _username);
-
-
+		void								set_auth(bool auth);
+		void								set_nickname(std::string _nickname);
+		void								set_username(std::vector<char *> _username);
 
 	/*------Getters----*/
-		std::string				get_nickname() const;
-		std::string				get_username() const;
-		std::string				get_fullname() const;
-		bool					get_auth() const;
-		bool					get_operator(Channel *channel) const;
-		int						get_client_fd() const;
-		struct sockaddr_in		get_client_adress() const;
+		std::string							get_nickname() const;
+		std::string							get_username() const;
+		std::string							get_fullname() const;
+		bool								get_auth() const;
+		bool								get_operator(Channel *channel) const;
+		int									get_client_fd() const;
+		struct sockaddr_in					get_client_adress() const;
 		std::map<std::string, Channel *>	get_channel_list() const;
-		std::string				get_userBuffer();
+		std::string							get_userBuffer();
 	
 	/*-----Others-----*/
-		void					user_buffer(char *new_buffer);
-		void					remove_channel(std::string channel_name);
-		void					add_channel( Channel *channel);
-		bool					is_joined(std::string channel);
+		void								user_buffer(char *new_buffer);
+		void								remove_channel(std::string channel_name);
+		void								add_channel( Channel *channel);
+		bool								is_joined(std::string channel);
 
 
 		/*------Operator function-----*/
-		void	set_operator();
-		bool	get_op(Channel *channel);
-		void	get_isOp_onChannel()
+		void								set_operator(Channel * channel);
+		bool								get_operator() const;
+		bool								get_op(const Channel *channel);
+		std::map<std::string, Channel *>	get_isOp_onChannel();
+		void								remove_op_channel(Channel *channel);
 
-		void	remove_op_channel(std::string channel_name);
 };
+void								send_msg(int client_fd, std::string message);//DONE
+
+#include "Channel.hpp"
+

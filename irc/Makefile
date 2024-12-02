@@ -4,7 +4,7 @@ CC = g++
 
 CFLAGS += -g -Wall -Wextra -Werror -std=c++98
 
-Server = Server User main HandleRequest Channel
+Server = Server User main HandleRequest Channel channel_commands send_msg server_setup
 
 SRC = $(addsuffix .cpp,  $(Server))\
 

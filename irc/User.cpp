@@ -72,6 +72,12 @@ std::string				User::get_userBuffer()
 	return (userBuffer);
 }
 
+bool	User::is_joined(std::string channel)
+{
+	if (channel_joined.find(channel) != channel_joined.end())
+		return (1);
+	return (0);	
+}
 
 /*----Setters------*/
 void	User::set_auth(bool auth)
@@ -107,6 +113,8 @@ void	User::remove_channel(std::string channel_name)
 
 void	User::user_buffer(char *new_buffer)
 {
+	if (userBuffer.find('\n') != std::string::npos)
+		userBuffer.clear();
 	std::string temp = new_buffer;
 	userBuffer += temp;
 }
@@ -137,7 +145,7 @@ bool	User::get_op(const Channel *channel)
 		return (true);
 	return (false);
 }
-void	User::get_isOp_onChannel()
+std::map<std::string, Channel *>	User::get_isOp_onChannel()
 {
 	return (isOp_onChannel);
 }
@@ -146,13 +154,13 @@ void	User::remove_op_channel(Channel *channel)
 {
 	if (_operator == true && isOp_onChannel.size() == 1)
 	{
-		_operator == false;
-		isOp_onChannel.erase(channel->get_channel_name());
+		_operator = false;
+		isOp_onChannel.erase(channel->get_name());
 	}
 	else if (_operator == true && isOp_onChannel.size() == 1)
 	{
 		channel->kick_everyone();
-		isOp_onChannel.erase(channel->get_channel_name()); // Need to delete the whole channel and kick everyone
+		isOp_onChannel.erase(channel->get_name()); // Need to delete the whole channel and kick everyone
 	}
 	
 }

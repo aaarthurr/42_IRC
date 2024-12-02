@@ -4,6 +4,7 @@
         "stdexcept": "cpp",
         "ostream": "cpp",
         "cstring": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "new": "cpp"
     }
 }

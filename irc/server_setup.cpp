@@ -23,7 +23,7 @@ void	Server::set_nickname(std::string nickname_str, int client_fd)
 {
     std::vector<char *> buffer = parse_request((char *)nickname_str.c_str(), " \r\n", 2);
     buffer.erase(buffer.begin());
-    std::cout << "BUFFER: " << buffer[0] << std::endl;
+   // std::cout << "BUFFER: " << buffer[0] << std::endl;
     std::string str(buffer[0]);
 
     if (unavailable_nick.find(str) != unavailable_nick.end())
@@ -48,6 +48,7 @@ void	Server::set_nickname(std::string nickname_str, int client_fd)
         send_msg(client_fd, msg);
     }
     client_list[client_fd]->set_nickname(str);
+    //leak to correct -TODO
 }
 
 void	Server::set_username(std::string username_str, int client_fd)
@@ -55,7 +56,7 @@ void	Server::set_username(std::string username_str, int client_fd)
     std::vector<char *> buffer = parse_request((char*)(username_str.c_str()), " :*\r\n", 5);
     
     buffer.erase(buffer.begin());
-    if (username_str.empty())
+    if (username_str.empty() || buffer.size() < 4)
     {
         send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
         return ;
@@ -66,6 +67,7 @@ void	Server::set_username(std::string username_str, int client_fd)
         return ;
     }
     client_list[client_fd]->set_username(buffer);
+    //leak to correct -TODO
     //std::cout << "USER has been setup with:" << std::endl << "Nickname: " 
     //            << client_list[client_fd]->get_nickname() << std::endl
     //            << "Username : " << client_list[client_fd]->get_username() << std::endl
@@ -79,7 +81,7 @@ void	Server::auth_client(int client_fd, std::string _password)
     buffer.erase(buffer.begin());
     _password.erase(_password.begin());
     _password = buffer[0];
-    std::cout << "PASSWORD: " << _password << std::endl;
+   // std::cout << "PASSWORD: " << _password << std::endl;
     if (_password.empty())
     {
         send_msg(client_fd, "IRC ERR_NEEDMOREPARAMS");

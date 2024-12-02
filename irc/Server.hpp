@@ -19,6 +19,7 @@
 #include <cerrno>
 #include <algorithm>
 #include "Channel.hpp"
+
 class Server
 {
 	private:
@@ -37,9 +38,9 @@ class Server
 		std::vector<char *>					parse_request(char *buffer, const char *delim, int words);//DONE
 		void								handle_request(void);//DONE
 		void								add_client(void);//DONE
-		void								kick_user(std::string command, int client_fd);
-		void								invite_user(std::string command, int client_fd);
-		void								set_topic(std::string command, int client_fd);
+		void								kick_user(int client_fd, std::string demand);
+		void								invite_user(int client_fd, std::string demand);
+		void								change_topic(int client_fd, std::string demand);
 		void								remove_client(std::map<int, User *>::iterator it, int x);//DONE
 		void								auth_client(int client_fd, std::string _password);
 		void								set_nickname(std::string nickname_str, int client_fd);//DONE
@@ -49,7 +50,6 @@ class Server
 		void								privmsg(int client_fd, std::string demand); //DONE
 		void								channel_msg(int client_fd, std::string channel_name, std::string msg);
 		void								handle_mod(std::vector<std::string> mod_request);
-		void								send_msg(int client_fd, std::string message);//DONE
 		int									get_socket() const;//DONE
 		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);//DONE
 		struct sockaddr_in					get_server_adress() const;//DONE
@@ -62,8 +62,9 @@ class Server
 
 		/*----Nucleocherrry's functions-------*/
 		int									get_client_fd_by_nickname(std::string _nickname);
-		int									get_client_fd_by_nickname(char *_nickname);
 
 
 		int									kick_user(Channel actual, User clientToExclude);
 };
+
+void								send_msg(int client_fd, std::string message);//DONE
