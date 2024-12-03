@@ -24,7 +24,11 @@ void Server::handle_mod(std::string buffer, int client_fd)
 	if (mode == "-i")
 		std::cout << "On Invite : " << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
 	else if (mode == "-t")
+	{
+		if (tab.size() > 3)
+			channel_list[tab[1]]->set_topic(tab[3]);
         std::cout << "Change topic :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
+	}
 	else if (mode == "-k")
         std::cout << "Change Key :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
 	else if (mode == "-o")

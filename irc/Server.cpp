@@ -175,7 +175,7 @@ void				Server::kick_user(int client_fd, std::string demand)
 			return ;
 		}
 		else
-			channel_list[buffer[0]]->remove_from_list(client_list[kickedClient]);
+			channel_list[buffer[0]]->remove_from_list(client_list[kickedClient]); //-TOFIX ajouter si il existe le message de kick
 	}
 	else
 		std::cout << client_list[kickedClient] << " Isnt the operator" << std::endl;//std::cout << "" << std::endl;  /\/\/\/\/\ message a envoyer ici -TOEND
