@@ -29,6 +29,7 @@ class Channel
 		void					add_to_list(const User   *client);
 		void					remove_from_list(User *client);
 		void					set_topic(std::string topic);
+		void					set_operator(int client_fd, std::string nickname);
 		void					set_invite_only(bool invite_only);
 		bool					is_invite_only();
 		int						get_operator() const;

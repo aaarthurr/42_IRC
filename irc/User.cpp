@@ -90,8 +90,11 @@ void	User::set_username(std::vector<char *> _username)
 {
 	this->username = _username[0];
 	this->fullname = _username[2];
-	this->fullname.push_back(' ');
-	this->fullname.append(_username[3]);
+	if (_username.size() > 3)
+	{
+		this->fullname.push_back(' ');
+		this->fullname.append(_username[3]);
+	}
 }
 
 void	User::set_nickname(std::string _nickname)

@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-void	Server::join_channel(std::string command, int client_fd)
+void	Server::join_channel(std::string command, int client_fd)//mettre arobase devant operateur et instalation de l'operatuer
 {
     std::vector<char *> buffer = parse_request((char *)command.c_str(), " \r\n", 2);
 
@@ -80,8 +80,15 @@ void	Server::quit_channel(std::string command, int client_fd)
 {
     std::vector<char *> buffer = parse_request((char *)command.c_str(), " \r\n", 3);
 
+    if (buffer.size() < 2)
+    {
+        send_msg(client_fd, "IRC ERR_NEEDMOREPARAM");
+        return ;
+    }
     std::string channels = buffer[1];
-    std::string message = buffer[2];
+    std::string message;
+    if (buffer.size() > 2)
+        message = buffer[2];
     int count = std::count(channels.begin(), channels.end(), ',');
     std::vector<char *> names = parse_request(buffer[1], " ,", count);
     if (!client_list[client_fd]->get_auth())
@@ -94,6 +101,18 @@ void	Server::quit_channel(std::string command, int client_fd)
     for (int x = 0; x < count; x++)
     {
         std::string channel_name = names[x];
+        if (channel_list.find(channel_name) == channel_list.end())
+        {
+            send_msg(client_fd, "IRC ERR_CHANNELDOESNTEXIST");
+            continue ;
+        }
+        if (!client_list[client_fd]->is_joined(channel_name))
+        {
+            send_msg(client_fd, "IRC ERR_CHANNELISNOTJOINED");
+            continue ;
+        }
+        std::string quit = channel_name + " User " + client_list[client_fd]->get_nickname() + " just quitted the channel";
+        channel_list[channel_name]->send_to_all(client_fd, quit);
         channel_list[channel_name]->remove_from_list(client_list[client_fd]);
         if (!message.empty())
             channel_list[channel_name]->send_to_all(client_fd, message);

@@ -37,7 +37,7 @@ void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x
 	else if (strncmp(buffer, "TOPIC", 5) == 0)
 		std::cout << "SET TOPIC " << it->second->get_nickname() << "\n";
 	else if (strncmp(buffer, "MODE", 4) == 0)
-		std::cout << "MODE SETUP " << it->second->get_nickname() << "\n";
+		handle_mod(buffer, it->first);
 	else if (strncmp(buffer, "PART", 4) == 0)
 		quit_channel(buffer, it->first);
 	else if (strncmp(buffer, "NICK", 4) == 0)

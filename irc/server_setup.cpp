@@ -56,7 +56,7 @@ void	Server::set_username(std::string username_str, int client_fd)
     std::vector<char *> buffer = parse_request((char*)(username_str.c_str()), " :*\r\n", 5);
     
     buffer.erase(buffer.begin());
-    if (username_str.empty() || buffer.size() < 4)
+    if (username_str.empty() || buffer.size() < 3)
     {
         send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
         return ;

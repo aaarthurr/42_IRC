@@ -5,6 +5,7 @@
         "ostream": "cpp",
         "cstring": "cpp",
         "sstream": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "algorithm": "cpp"
     }
 }

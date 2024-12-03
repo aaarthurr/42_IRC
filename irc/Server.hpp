@@ -49,7 +49,7 @@ class Server
 		void								quit_channel(std::string channel_name, int client_fd);//NEED TO BE TESTED
 		void								privmsg(int client_fd, std::string demand); //DONE
 		void								channel_msg(int client_fd, std::string channel_name, std::string msg);
-		void								handle_mod(std::vector<std::string> mod_request);
+		void								handle_mod(std::string buffer, int client_fd);
 		int									get_socket() const;//DONE
 		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);//DONE
 		struct sockaddr_in					get_server_adress() const;//DONE

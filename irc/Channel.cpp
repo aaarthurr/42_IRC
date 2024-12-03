@@ -43,13 +43,12 @@ void	Channel::add_to_list(const User   *client)
 }
 void					Channel::remove_from_list(User *client)
 {
-	client_list.erase(client->get_client_fd());
 	client_list[client->get_client_fd()]->remove_channel(name);
-
 	if (client->get_op(this) == true)
 	{
 		client_list[client->get_client_fd()]->remove_op_channel(this);	
 	}
+	client_list.erase(client->get_client_fd());
 }
 
 void					Channel::send_to_all(int client_fd, std::string message)
@@ -78,6 +77,37 @@ std::string	Channel::get_client_str(std::string nickname)
     //:server-name 353 nickname = #channel-name :@user1 +user2 user3
 	return (msg);
 }
+
+int	get_client_fd_by_nickname(std::string _nickname, std::map<int, User *> client_list)//-TODO faire un fonction commune a toute les fichiers
+{
+	for (std::map<int, User *>::iterator it = client_list.begin(); it != client_list.end(); it++)
+	{
+		if (it->second->get_nickname() == _nickname)
+		{
+			return (it->second->get_client_fd());
+		}
+	}
+	return (-1);
+}
+
+void	Channel::set_operator(int client_fd, std::string nickname)
+{
+	int target = get_client_fd_by_nickname(nickname, client_list);
+	if (target == -1)
+	{
+		std::string msg = name + " ERR_CANNOTFINDUSER";
+		send_msg(client_fd , msg);
+	}
+	else
+	{
+		std::string msg = name + " User " + client_list[client_fd]->get_nickname() + " is the new operator of this channel";
+		client_list[_operator]->remove_op_channel(this);
+		_operator = target;
+		client_list[client_fd]->set_operator(this);
+		send_to_all(client_fd, msg);
+	}
+}
+
 
 Channel::~Channel()
 {

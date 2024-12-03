@@ -37,6 +37,11 @@ void	Server::start_server(void)
 
 void	Server::remove_client(std::map<int, User *>::iterator it, int x)
 {
+    for (std::map<std::string, Channel *>::iterator chan = channel_list.begin(); chan != channel_list.end(); chan++)
+    {
+        if (it->second->is_joined(chan->first))
+            chan->second->remove_from_list(it->second);
+    }
     std::cout << "Client " << it->second->get_nickname() << " requested to close the connection." << std::endl; // move that to the user destructor
     unavailable_nick.erase(it->second->get_nickname());
     std::vector <struct pollfd>::iterator it2 = fds.begin();
@@ -129,7 +134,7 @@ Server::~Server()
 
 /*-------------Nucleocherry's functions-------------*/
 
-int					Server::get_client_fd_by_nickname(std::string _nickname)
+int					Server::get_client_fd_by_nickname(std::string _nickname)//-TODO faire un fonction commune a toute les fichiers
 {
 	for (std::map<int, User *>::iterator it = client_list.begin(); it != client_list.end(); it++)
 	{
