@@ -76,7 +76,7 @@ void	Server::set_username(std::string username_str, int client_fd)
 
 void	Server::auth_client(int client_fd, std::string _password)
 {
-    std::vector<char *> buffer = parse_request((char *)_password.c_str(), " \r\n", 2);
+    std::vector<char *> buffer = parse_request((char *)_password.c_str(), " :\r\n", 2);
 
     buffer.erase(buffer.begin());
     _password.erase(_password.begin());
