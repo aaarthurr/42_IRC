@@ -1,8 +1,7 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name_, std::string topic_, int operator_) : name(name_), topic(topic_), _operator(operator_)
+Channel::Channel(std::string name_, std::string topic_, int operator_) : name(name_), topic(topic_), _operator(operator_), is_on_invite(false)
 {
-
 }
 
 Channel::Channel(std::string name_) : name(name_)
@@ -53,11 +52,12 @@ void					Channel::remove_from_list(User *client)
 	}
 }
 
-void					Channel::send_to_all(std::string message)
+void					Channel::send_to_all(int client_fd, std::string message)
 {
 	for (std::map<int, User *>::iterator it = client_list.begin(); it != client_list.end(); it++)
 	{
-		send_msg(it->first, message);
+		if (it->first != client_fd)
+			send_msg(it->first, message);
 	}
 }
 

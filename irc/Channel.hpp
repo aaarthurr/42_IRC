@@ -36,7 +36,7 @@ class Channel
 		std::string				get_topic() const; //if no topic, return NO TOPIC or smth
 		std::string				get_client_str(std::string nickname);  //:server-name 353 nickname = #channel-name :@user1 +user2 user3
 		std::map<int , User *>	get_client_list() const;
-		void					send_to_all(std::string message);
+		void					send_to_all(int client_fd, std::string message);
 		~Channel();
 
 		/*-----Nucleocherry's functions-------*/

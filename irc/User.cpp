@@ -23,6 +23,7 @@ User::User(int client_fd, struct sockaddr_in client_adress)
 }
 User::~User()
 {
+	
 	//std::cout << "destructor" << std::endl;
 }
 /*------Getters*/

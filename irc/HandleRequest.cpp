@@ -93,9 +93,11 @@ void    Server::handle_request(void)
 						continue;
 					else if (buffer)
 					{
-						hashCommand((char *)it->second->get_userBuffer().c_str(), it, x);
+						std::string buf = it->second->get_userBuffer();
 						std::cout << "client : " << it->second->get_userBuffer() << std::endl;
-						it->second->get_userBuffer().clear();
+						hashCommand((char *)it->second->get_userBuffer().c_str(), it, x);
+						if (strncmp(buf.c_str(), "QUIT", 4))
+							it->second->get_userBuffer().clear();
 					}
 				}
 			}

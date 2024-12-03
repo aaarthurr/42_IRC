@@ -36,9 +36,11 @@ void	Server::join_channel(std::string command, int client_fd)
                 send_msg(client_fd, "IRC Error: ERR_WRONGNAME");
                 break ;
             }
-            Channel *chat = new Channel(channel_name);
+            Channel *chat = new Channel(channel_name, "No topic yet", client_fd);
             channel_list[channel_name] = chat;
             send_msg(client_fd, chat->get_client_str(client_list[client_fd]->get_nickname()));
+            client_list[client_fd]->add_channel(chat);
+            chat->add_to_list(client_list[client_fd]);
             //msg at the creation of the channel ?
             return ;
         }
@@ -56,13 +58,13 @@ void	Server::join_channel(std::string command, int client_fd)
             }
             else
             {
+                 client_list[client_fd]->add_channel(it->second);
                 std::string msg = it->first + " User " + client_list[client_fd]->get_nickname() + " just joined this channel !";
                 it->second->add_to_list(client_list[client_fd]);
-                it->second->send_to_all(msg);
+                it->second->send_to_all(client_fd, msg);
                 std::string msg2 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " :<" + it->second->get_topic() + ">";
                 send_msg(client_fd, msg2);
                 send_msg(client_fd, it->second->get_client_str(client_list[client_fd]->get_nickname()));
-                client_list[client_fd]->add_channel(it->second);
             }
         }
     }
@@ -94,12 +96,12 @@ void	Server::quit_channel(std::string command, int client_fd)
         std::string channel_name = names[x];
         channel_list[channel_name]->remove_from_list(client_list[client_fd]);
         if (!message.empty())
-            channel_list[channel_name]->send_to_all(message);
+            channel_list[channel_name]->send_to_all(client_fd, message);
         if (channel_list[channel_name]->get_operator() == client_fd || channel_list[channel_name]->get_client_list().size() == 0)
         {
             if (!channel_list[channel_name]->get_client_list().empty())
             {
-                channel_list[channel_name]->send_to_all("IRC Channel is being terminated");
+                channel_list[channel_name]->send_to_all(0, "IRC Channel is being terminated");
                 channel_list[channel_name]->kick_everyone();
             }
             delete channel_list[channel_name];

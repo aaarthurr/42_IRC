@@ -43,7 +43,6 @@ void	Server::remove_client(std::map<int, User *>::iterator it, int x)
     std::advance(it2, x);
     fds.erase(it2);
     client_list.erase(it);
-    delete it->second;
 }
 
 void	send_msg(int client_fd, std::string message)//maybe have it so that we can put infinite parameters

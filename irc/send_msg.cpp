@@ -1,5 +1,12 @@
 #include "Server.hpp"
 
+std::string    remove_endl(std::string str)
+{
+    while (str.find("\n") != std::string::npos)
+        str.erase(str.find("\n"), 1);
+    return (str);
+}
+
 void	Server::channel_msg(int client_fd, std::string channel_name, std::string msg)
 {
     if (channel_list.find(channel_name) == channel_list.end())
@@ -12,8 +19,9 @@ void	Server::channel_msg(int client_fd, std::string channel_name, std::string ms
     {
         nickname.insert(0, "@");
     }
-	std::string to_send = nickname + " : " + msg;
-    channel_list[channel_name]->send_to_all(to_send);
+	std::string to_send = channel_name + " " + nickname + " : " + msg;
+    to_send = remove_endl(to_send);
+    channel_list[channel_name]->send_to_all(client_fd, to_send);
 }
 
 void	Server::privmsg(int client_fd, std::string demand)
@@ -53,7 +61,6 @@ void	Server::privmsg(int client_fd, std::string demand)
     std::string nickname = client_list[client_fd]->get_nickname();
     nickname.append(" ");
     msg.insert(0, nickname);
-    while (msg.find("\n") != std::string::npos)
-        msg.erase(msg.find("\n"), 1);
+    msg = remove_endl(msg);
     send_msg(it->first, msg);
 }
