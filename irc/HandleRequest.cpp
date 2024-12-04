@@ -51,6 +51,8 @@ void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x
 		auth_client(it->first, buffer);
 	else if (strncmp(buffer, "PRIVMSG", 7) == 0)
 		privmsg(it->first, buffer);
+	else if (strncmp(buffer, "HELP", 4) == 0)
+		help(it->first, buffer);
 	else if (strncmp(buffer, "CAP LS 302", 10) == 0)
 		send_msg(it->first, "CAP * LS :");
 	else if (strncmp(buffer, "QUIT", 4) == 0)
@@ -92,7 +94,7 @@ void    Server::handle_request(void)
 					it->second->user_buffer(buffer);
 					if (it->second->get_userBuffer().find('\n') == std::string::npos)
 						continue;
-					else if (buffer)
+					else
 					{
 						std::string buf = it->second->get_userBuffer();
 						std::cout << "client : " << it->second->get_userBuffer() << std::endl;

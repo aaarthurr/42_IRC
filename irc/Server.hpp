@@ -64,7 +64,9 @@ class Server
 
 		/*----Nucleocherrry's functions-------*/
 		int									get_client_fd_by_nickname(std::string _nickname);
-		void									kick_user(std::string demand, int client_fd);
+		void								kick_user(std::string demand, int client_fd);
+
+		void								help(int client_fd, std::string demand);
 };
 
 void								send_msg(int client_fd, std::string message);//DONE
