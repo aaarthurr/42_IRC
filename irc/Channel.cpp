@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name_, std::string topic_, int operator_) : name(name_), topic(topic_), _operator(operator_), is_on_invite(false)
+Channel::Channel(std::string name_, std::string topic_, int operator_) : name(name_), topic(topic_), _operator(operator_), is_on_invite(0)
 {
 }
 
@@ -81,6 +81,8 @@ std::string	Channel::get_client_str(std::string nickname)
 	std::string msg = "IRC " + nickname + " = " + name + " :";
 	for (std::map<int, User *>::iterator it = client_list.begin(); it != client_list.end(); it++)
 	{
+		if (it->first == _operator)
+			msg += '@';
 		msg += it->second->get_nickname();
 		msg += " ";
 	}

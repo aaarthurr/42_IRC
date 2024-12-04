@@ -13,16 +13,6 @@ void    Server::handle_each_channel(std::string channel_name, int client_fd)//ne
 {
         std::map<std::string , Channel *>::iterator it = channel_list.find(channel_name);
  
-        if (channel_list[channel_name]->is_invite_only())
-        {
-            send_msg(client_fd, "IRC Error: Channel is on invite only mode");
-            return ;
-        }
-        else if (handle_key(channel_name))
-        {
-            send_msg(client_fd, "IRC ERR_WRONGPASSWORD");
-                return ;
-        }
         if (channel_list.empty() || it == channel_list.end())
         {
             if (channel_name[0] != '#'|| std::count(channel_name.begin(), channel_name.end(), '#') > 1 || channel_name.size() > 200 || channel_name.find(' ') != std::string::npos)
@@ -32,7 +22,8 @@ void    Server::handle_each_channel(std::string channel_name, int client_fd)//ne
             }
             Channel *chat = new Channel(channel_name, "No topic yet", client_fd);
             channel_list[channel_name] = chat;
-            send_msg(client_fd, chat->get_client_str(client_list[client_fd]->get_nickname()));
+            std::string msg2 = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host JOIN :" + channel_name;
+            send_msg(client_fd, msg2);
             client_list[client_fd]->add_channel(chat);
             chat->add_to_list(client_list[client_fd]);
             //msg at the creation of the channel ?
@@ -52,12 +43,20 @@ void    Server::handle_each_channel(std::string channel_name, int client_fd)//ne
             }
             else
             {
-                 client_list[client_fd]->add_channel(it->second);
+                if (handle_key(channel_name))
+                {
+                    send_msg(client_fd, "IRC ERR_WRONGPASSWORD");
+                    return ;
+                }
+                client_list[client_fd]->add_channel(it->second);
+                //<user>!<user>@<host> JOIN :#channel_name
                 std::string msg = it->first + " User " + client_list[client_fd]->get_nickname() + " just joined this channel !";
                 it->second->add_to_list(client_list[client_fd]);
                 it->second->send_to_all(client_fd, msg);
-                std::string msg2 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " : <" + it->second->get_topic() + ">";
+                std::string msg2 = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host JOIN :" + channel_name;
+                std::string msg3 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " : <" + it->second->get_topic() + ">";
                 send_msg(client_fd, msg2);
+                send_msg(client_fd, msg3);
                 send_msg(client_fd, it->second->get_client_str(client_list[client_fd]->get_nickname()));
             }
         }

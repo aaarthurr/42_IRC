@@ -15,11 +15,11 @@ void	Server::channel_msg(int client_fd, std::string channel_name, std::string ms
             return ;
         }
     std::string nickname = client_list[client_fd]->get_nickname();
-    if (client_list[client_fd]->get_operator())
+    if (channel_list[channel_name]->get_operator() == client_fd)
     {
         nickname.insert(0, "@");
     }
-	std::string to_send = channel_name + " " + nickname + " : " + msg;
+	std::string to_send = ":" + client_list[client_fd]->get_nickname() + "!~" + client_list[client_fd]->get_username() + "@host PRIVMSG " + channel_name + " :" + msg;
     to_send = remove_endl(to_send);
     channel_list[channel_name]->send_to_all(client_fd, to_send);
 }
@@ -43,7 +43,6 @@ void	Server::privmsg(int client_fd, std::string demand)
 		channel_msg(client_fd, buffer[1], buffer[2]);
         return ;
     }
-    std::string msg = buffer[2];
     std::map<int, User *>::iterator it = client_list.begin();
 
     for (; it != client_list.end() && strcmp(it->second->get_nickname().c_str(), buffer[1]);)
@@ -58,9 +57,7 @@ void	Server::privmsg(int client_fd, std::string demand)
         send_msg(client_fd, "IRC Error: receptor needs to be authenticated first");
         return ;
     }
-    std::string nickname = client_list[client_fd]->get_nickname();
-    nickname.append(" ");
-    msg.insert(0, nickname);
+    std::string msg = ":" + client_list[client_fd]->get_nickname() + "!~" + client_list[client_fd]->get_username() + "@host PRIVMSG " + buffer[1] + " :" + buffer[2];
     msg = remove_endl(msg);
     send_msg(it->first, msg);
 }

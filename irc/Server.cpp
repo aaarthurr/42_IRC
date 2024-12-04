@@ -153,7 +153,7 @@ void				Server::kick_user(std::string demand, int client_fd)
 	buffer.erase(buffer.begin());
 
 
-	if (buffer.size() != 3)
+	if (buffer.size() < 2)
     {
         send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
         return ;
