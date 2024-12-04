@@ -32,8 +32,10 @@ class Channel
 		void					set_topic(std::string topic);
 		void					set_operator(int client_fd, std::string nickname);
 		void					set_invite_only(bool _invite_only);
+		void					set_password(int client_fd, std::string password);
 		bool					is_invite_only();
 		int						get_operator() const;
+		std::string				get_pass() const;
 		std::string				get_name() const;
 		std::string				get_topic() const; //if no topic, return NO TOPIC or smth
 		std::string				get_client_str(std::string nickname);  //:server-name 353 nickname = #channel-name :@user1 +user2 user3

@@ -30,7 +30,7 @@ void Server::handle_mod(std::string buffer, int client_fd)
 			channel_list[tab[1]]->send_to_all(0, msg);
 		}
 		else
-			send_msg(client_fd, "IRC Channel already invite only dumbass");
+			send_msg(client_fd, "IRC Channel's already invite only dumbass");
 	}
 	else if (mode == "-t")
 	{
@@ -40,9 +40,16 @@ void Server::handle_mod(std::string buffer, int client_fd)
 			send_msg(client_fd, "IRC ERR_NEEDMOREPARAM");
 	}
 	else if (mode == "-k")
+	{
+
+		channel_list[tab[1]]->set_password(client_fd, tab[3]);
         std::cout << "Change Key :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
+	}
 	else if (mode == "-o")
+	{
 		channel_list[tab[1]]->set_operator(client_fd, tab[3]);
+		
+	}
 	else if (mode == "-l")
         std::cout << "Change limit of user :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
 	else

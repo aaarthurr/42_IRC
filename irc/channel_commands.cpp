@@ -1,13 +1,27 @@
 #include "Server.hpp"
 
-void    Server::handle_each_channel(std::string channel_name, int client_fd)//need to be tested
+int Server::handle_key(std::string channel_name)//to be tested -TODO
+{
+    std::vector<char *> buffer = parse_request((char *)channel_name.c_str(), " \r\n", 2);
+    if (buffer.size() != 2 || channel_list[buffer[0]]->get_pass().empty() || buffer[1] == channel_list[channel_name]->get_pass())
+	    return (0);
+    else
+        return (1);
+}
+
+void    Server::handle_each_channel(std::string channel_name, int client_fd)//need to be tested -TODO
 {
         std::map<std::string , Channel *>::iterator it = channel_list.find(channel_name);
-
+ 
         if (channel_list[channel_name]->is_invite_only())
         {
             send_msg(client_fd, "IRC Error: Channel is on invite only mode");
             return ;
+        }
+        else if (handle_key(channel_name))
+        {
+            send_msg(client_fd, "IRC ERR_WRONGPASSWORD");
+                return ;
         }
         if (channel_list.empty() || it == channel_list.end())
         {
@@ -42,17 +56,13 @@ void    Server::handle_each_channel(std::string channel_name, int client_fd)//ne
                 std::string msg = it->first + " User " + client_list[client_fd]->get_nickname() + " just joined this channel !";
                 it->second->add_to_list(client_list[client_fd]);
                 it->second->send_to_all(client_fd, msg);
-                std::string msg2 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " :<" + it->second->get_topic() + ">";
+                std::string msg2 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " : <" + it->second->get_topic() + ">";
                 send_msg(client_fd, msg2);
                 send_msg(client_fd, it->second->get_client_str(client_list[client_fd]->get_nickname()));
             }
         }
 }
 
-int handle_key()
-{
-
-}
 
 void	Server::join_channel(std::string command, int client_fd)//mettre arobase devant operateur et instalation de l'operatuer
 {
@@ -77,14 +87,45 @@ void	Server::join_channel(std::string command, int client_fd)//mettre arobase de
 
     for (int x = 0; x < count; x++)
     {
-       
+       handle_each_channel(names[x], client_fd);
     }
+
     //------if not created-----
         //broadcast to all user if not created
         //if it's invite only, do not join
         //send the topic of the channel
         //:server-name 332 nickname #channel-name :<topic>
         //:server-name 353 nickname = #channel-name :@user1 +user2 user3
+
+
+		// -- nucleocherry's code
+
+	// std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+	// buffer.erase(buffer.begin());
+
+
+	// if (buffer.size() < 2)
+    // {
+    //     send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
+    //     return ;
+    // }
+
+	// if (buffer.size() < 2)
+	// {
+	// 	//fonction join tout court
+	// 	std::string channel_name = buffer[1];
+	// 	std::map<std::string, Channel *>::iterator itChan = channel_list.find(channel_name);
+	// 	if (it == channel_list.end())
+	// 	if (channel_list)// verif le channel existe pas
+	// }
+	// else if (buffer.size() == 3)
+	// {
+	// 	//fonction qui create
+	// }
+
+		//    /join #channel_name 
+		// si ca existe pas on met erreur et alors il doit faire ca :  send_msg(client_fd, "IRC Error: not enough parameter");
+		// sinon on doit ajouter /join #channel_name [option]
 }
 
 void	Server::quit_channel(std::string command, int client_fd)

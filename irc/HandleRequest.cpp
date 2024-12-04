@@ -30,8 +30,11 @@ std::vector<char *> Server::parse_request(char *buffer, const char *delim, int w
 //fonction to return the command index for the switch case
 void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x)
 {
+
+	send_msg(it->first, "Valid Commands : KICK | INVITE | TOPIC | MODE | PART | NICK |\n JOIN | USER | PASS | PRIVMSG | QUIT");
+//this line is for debug only, -TOREMOVE
 	if (strncmp(buffer, "KICK", 4) == 0)
-		std::cout << "KICK USER " << it->second->get_nickname() << "\n";
+		kick_user(buffer, it->first);
 	else if (strncmp(buffer, "INVITE", 6) == 0)
 		std::cout << "INVITE USER " << it->second->get_nickname() << "\n";
 	else if (strncmp(buffer, "TOPIC", 5) == 0)

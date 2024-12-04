@@ -25,14 +25,22 @@ std::string		Channel::get_name() const
 {
 	return (name);
 }
+
 std::string		Channel::get_topic() const
 {
 	return (topic);
 }
+
+std::string	Channel::get_pass() const
+{
+	return (pass);
+}
+
 int	Channel::get_operator() const
 {
 	return (_operator);
 }
+
 std::map<int , User *>		Channel::get_client_list() const
 {
 	return (client_list);
@@ -90,6 +98,14 @@ int	get_client_fd_by_nickname(std::string _nickname, std::map<int, User *> clien
 		}
 	}
 	return (-1);
+}
+
+void	Channel::set_password(int client_fd, std::string password)
+{
+	std::string msg = name + " Channel password has been changed"; 
+	
+	pass = password;
+	send_msg(client_fd, msg);
 }
 
 void	Channel::set_operator(int client_fd, std::string nickname)

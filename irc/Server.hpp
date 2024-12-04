@@ -51,6 +51,7 @@ class Server
 		void								channel_msg(int client_fd, std::string channel_name, std::string msg);
 		void								handle_mod(std::string buffer, int client_fd);
 		void   								handle_each_channel(std::string channel_name, int client_fd);//need to be tesed
+		int									handle_key(std::string channel_name);//NEED TO BE TESTED
 		int									get_socket() const;//DONE
 		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);//DONE
 		struct sockaddr_in					get_server_adress() const;//DONE
@@ -63,7 +64,7 @@ class Server
 
 		/*----Nucleocherrry's functions-------*/
 		int									get_client_fd_by_nickname(std::string _nickname);
-		int									kick_user(Channel actual, User clientToExclude);
+		void									kick_user(std::string demand, int client_fd);
 };
 
 void								send_msg(int client_fd, std::string message);//DONE

@@ -147,7 +147,7 @@ int					Server::get_client_fd_by_nickname(std::string _nickname)//-TODO faire un
 }
 
 
-void				Server::kick_user(int client_fd, std::string demand)
+void				Server::kick_user(std::string demand, int client_fd)
 {
 	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
 	buffer.erase(buffer.begin());
