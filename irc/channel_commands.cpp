@@ -1,40 +1,20 @@
 #include "Server.hpp"
 
-void	Server::join_channel(std::string command, int client_fd)//mettre arobase devant operateur et instalation de l'operatuer
+void    Server::handle_each_channel(std::string channel_name, int client_fd)//need to be tested
 {
-    std::vector<char *> buffer = parse_request((char *)command.c_str(), " \r\n", 2);
-
-    if (buffer.size() < 2)
-    {
-        send_msg(client_fd, "IRC Error: not enough parameter");
-        return ;
-    }
-    std::string channel = buffer[1];
-    int count = std::count(channel.begin(), channel.end(), ',');
-    if (!client_list[client_fd]->get_auth())
-    {
-        send_msg(client_fd, "IRC Error: you need to be authenticated first");
-        return ;
-    }
-
-    if (!count)
-        count = 1;
-    std::vector<char *> names = parse_request(buffer[1], ", ", count);
-
-    for (int x = 0; x < count; x++)
-    {
-        std::string channel_name = names[x];
         std::map<std::string , Channel *>::iterator it = channel_list.find(channel_name);
-        //------if created--------
-            //set operator
-            //name max 200 ch beginning by & or # -search why- , no space or ctrlg or ,
-            //can join multiple channel by separating them with commas
+
+        if (channel_list[channel_name]->is_invite_only())
+        {
+            send_msg(client_fd, "IRC Error: Channel is on invite only mode");
+            return ;
+        }
         if (channel_list.empty() || it == channel_list.end())
         {
             if (channel_name[0] != '#'|| std::count(channel_name.begin(), channel_name.end(), '#') > 1 || channel_name.size() > 200 || channel_name.find(' ') != std::string::npos)
             {
                 send_msg(client_fd, "IRC Error: ERR_WRONGNAME");
-                break ;
+                return ;
             }
             Channel *chat = new Channel(channel_name, "No topic yet", client_fd);
             channel_list[channel_name] = chat;
@@ -67,6 +47,37 @@ void	Server::join_channel(std::string command, int client_fd)//mettre arobase de
                 send_msg(client_fd, it->second->get_client_str(client_list[client_fd]->get_nickname()));
             }
         }
+}
+
+int handle_key()
+{
+
+}
+
+void	Server::join_channel(std::string command, int client_fd)//mettre arobase devant operateur et instalation de l'operatuer
+{
+    std::vector<char *> buffer = parse_request((char *)command.c_str(), " \r\n", 2);
+
+    if (buffer.size() < 2)
+    {
+        send_msg(client_fd, "IRC Error: not enough parameter");
+        return ;
+    }
+    std::string channel = buffer[1];
+    int count = std::count(channel.begin(), channel.end(), ',');
+    if (!client_list[client_fd]->get_auth())
+    {
+        send_msg(client_fd, "IRC Error: you need to be authenticated first");
+        return ;
+    }
+
+    if (!count)
+        count = 1;
+    std::vector<char *> names = parse_request(buffer[1], ", ", count);
+
+    for (int x = 0; x < count; x++)
+    {
+       
     }
     //------if not created-----
         //broadcast to all user if not created

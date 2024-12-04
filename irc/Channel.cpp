@@ -16,7 +16,9 @@ bool	Channel::is_invite_only()
 
 void Channel::set_topic(std::string _topic)
 {
+	std::string msg = name + " Topic changed from " + topic + " to " + _topic;
 	topic =_topic;
+	send_to_all(0, msg);
 }
 
 std::string		Channel::get_name() const
@@ -108,6 +110,10 @@ void	Channel::set_operator(int client_fd, std::string nickname)
 	}
 }
 
+void	Channel::set_invite_only(bool _invite_only)
+{
+	is_on_invite = _invite_only;
+}
 
 Channel::~Channel()
 {

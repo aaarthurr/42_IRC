@@ -22,20 +22,27 @@ void Server::handle_mod(std::string buffer, int client_fd)
 	}
 	std::string mode(tab[2]);
 	if (mode == "-i")
-		std::cout << "On Invite : " << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
+	{
+		if (!channel_list[tab[1]]->is_invite_only())
+		{
+			std::string msg = channel_list[tab[1]]->get_name() + " Channel was set to invite only";
+			channel_list[tab[1]]->set_invite_only(true);
+			channel_list[tab[1]]->send_to_all(0, msg);
+		}
+		else
+			send_msg(client_fd, "IRC Channel already invite only dumbass");
+	}
 	else if (mode == "-t")
 	{
 		if (tab.size() > 3)
 			channel_list[tab[1]]->set_topic(tab[3]);
-        std::cout << "Change topic :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
+		else
+			send_msg(client_fd, "IRC ERR_NEEDMOREPARAM");
 	}
 	else if (mode == "-k")
         std::cout << "Change Key :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
 	else if (mode == "-o")
-	{
 		channel_list[tab[1]]->set_operator(client_fd, tab[3]);
-        std::cout << "Set user as Operator :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
-	}
 	else if (mode == "-l")
         std::cout << "Change limit of user :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
 	else

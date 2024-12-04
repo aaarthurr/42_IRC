@@ -42,7 +42,7 @@ class Server
 		void								invite_user(int client_fd, std::string demand);
 		void								change_topic(int client_fd, std::string demand);
 		void								remove_client(std::map<int, User *>::iterator it, int x);//DONE
-		void								auth_client(int client_fd, std::string _password);
+		void								auth_client(int client_fd, std::string _password);//DONE
 		void								set_nickname(std::string nickname_str, int client_fd);//DONE
 		void								set_username(std::string username_str, int client_fd);//DONE
 		void								join_channel(std::string command, int client_fd);//NEED TO BE TESTED
@@ -50,6 +50,7 @@ class Server
 		void								privmsg(int client_fd, std::string demand); //DONE
 		void								channel_msg(int client_fd, std::string channel_name, std::string msg);
 		void								handle_mod(std::string buffer, int client_fd);
+		void   								handle_each_channel(std::string channel_name, int client_fd);//need to be tesed
 		int									get_socket() const;//DONE
 		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);//DONE
 		struct sockaddr_in					get_server_adress() const;//DONE
@@ -62,8 +63,6 @@ class Server
 
 		/*----Nucleocherrry's functions-------*/
 		int									get_client_fd_by_nickname(std::string _nickname);
-
-
 		int									kick_user(Channel actual, User clientToExclude);
 };
 

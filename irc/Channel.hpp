@@ -20,6 +20,7 @@ class Channel
 	private:
 		std::string				name;
 		std::string				topic;
+		std::string				pass;
 		int						_operator;
 		bool					is_on_invite;
 		std::map<int , User *>	client_list;
@@ -30,7 +31,7 @@ class Channel
 		void					remove_from_list(User *client);
 		void					set_topic(std::string topic);
 		void					set_operator(int client_fd, std::string nickname);
-		void					set_invite_only(bool invite_only);
+		void					set_invite_only(bool _invite_only);
 		bool					is_invite_only();
 		int						get_operator() const;
 		std::string				get_name() const;
