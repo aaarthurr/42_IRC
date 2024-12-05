@@ -11,7 +11,6 @@ std::vector<char *> Server::parse_request(char *buffer, const char *delim, int w
         words--;
         token = strtok(NULL, delim);
     }
-
     if (token != NULL)
 	{
         std::string remaining = token;
@@ -34,9 +33,7 @@ void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x
 	if (strncmp(buffer, "KICK", 4) == 0)
 		kick_user(buffer, it->first);
 	else if (strncmp(buffer, "INVITE", 6) == 0)
-		std::cout << "INVITE USER " << it->second->get_nickname() << "\n";
-	else if (strncmp(buffer, "TOPIC", 5) == 0)
-		std::cout << "SET TOPIC " << it->second->get_nickname() << "\n";
+		invite_user(it->first, buffer);
 	else if (strncmp(buffer, "MODE", 4) == 0)
 		handle_mod(buffer, it->first);
 	else if (strncmp(buffer, "PART", 4) == 0)

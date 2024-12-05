@@ -53,11 +53,12 @@ void	Channel::add_to_list(const User   *client)
 }
 void					Channel::remove_from_list(User *client)
 {
-	client_list[client->get_client_fd()]->remove_channel(name);
+	client->remove_channel(name);
 	if (client->get_op(this) == true)
 	{
 		client_list[client->get_client_fd()]->remove_op_channel(this);	
 	}
+
 	client_list.erase(client->get_client_fd());
 }
 
@@ -104,7 +105,12 @@ int	get_client_fd_by_nickname(std::string _nickname, std::map<int, User *> clien
 
 void	Channel::set_password(int client_fd, std::string password)
 {
-	std::string msg = name + " Channel password has been changed"; 
+	std::string msg = name + " Channel password has been";
+
+	if (pass.empty())
+		msg += " set to " + password; 
+	else
+		msg += name + " changed to " + password; 
 	
 	pass = password;
 	send_msg(client_fd, msg);

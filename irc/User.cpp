@@ -67,6 +67,10 @@ std::map<std::string, Channel *>	User::get_channel_list() const
 {
 	return (channel_joined);
 }
+std::map<std::string, Channel *>	User::get_channel_invited() const
+{
+	return (channel_invited);
+}
 
 std::string				User::get_userBuffer()
 {
@@ -110,6 +114,11 @@ void			User::add_channel( Channel *channel)
 {
 	channel_joined[channel->get_name()] = channel;
 }
+
+void			User::set_invitedChannel( Channel *channel)
+{
+	channel_invited[channel->get_name()] = channel;
+}
 void	User::remove_channel(std::string channel_name)
 {
 	channel_joined.erase(channel_name);
@@ -121,6 +130,11 @@ void	User::user_buffer(char *new_buffer)
 		userBuffer.clear();
 	std::string temp = new_buffer;
 	userBuffer += temp;
+}
+
+void								User::remove_invitation(std::string channel)
+{
+	channel_invited.erase(channel);
 }
 
 /*----------------------Operator function-------*/

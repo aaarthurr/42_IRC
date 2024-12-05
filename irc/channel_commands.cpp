@@ -1,27 +1,44 @@
 #include "Server.hpp"
 
-int Server::handle_key(std::string channel_name)//to be tested -TODO
+int handle_key(Channel *chan, std::string pass)//to be tested -TODO
 {
-    std::vector<char *> buffer = parse_request((char *)channel_name.c_str(), " \r\n", 2);
-    if (buffer.size() != 2 || channel_list[buffer[0]]->get_pass().empty() || buffer[1] == channel_list[channel_name]->get_pass())
-	    return (0);
-    else
-        return (1);
+    if (!chan->get_pass().empty() && pass == chan->get_pass())
+            return (0);
+    return (1);
 }
 
-void    Server::handle_each_channel(std::string channel_name, int client_fd)//need to be tested -TODO
+int Server::check_invitation(int client_fd, std::string channel_name)
 {
+    if (!client_list[client_fd]->get_channel_invited().empty() && client_list[client_fd]->get_channel_invited().find(channel_name) != client_list[client_fd]->get_channel_invited().end())
+    {
+        client_list[client_fd]->remove_invitation(channel_name);
+        return (1);
+    }
+    return (0);
+}
+
+void    Server::handle_each_channel(std::string channel, int client_fd)//need to be tested -TODO
+{
+    std::cout << "channel " << channel << std::endl;
+        std::vector<char *> buffer = parse_request((char *)channel.c_str(), " \r\n", 2);
+        std::string channel_name = buffer[0];
+        if (channel_name[0] != '#')
+            channel_name.insert(0, "#");
+        //std::cout << "channel_name : " << channel_name << " password : " << buffer[1] << std::endl;
         std::map<std::string , Channel *>::iterator it = channel_list.find(channel_name);
- 
+
         if (channel_list.empty() || it == channel_list.end())
         {
-            if (channel_name[0] != '#'|| std::count(channel_name.begin(), channel_name.end(), '#') > 1 || channel_name.size() > 200 || channel_name.find(' ') != std::string::npos)
+
+            if (std::count(channel_name.begin(), channel_name.end(), '#') > 1 || channel_name.size() > 200 || channel_name.find(' ') != std::string::npos)
             {
                 send_msg(client_fd, "IRC Error: ERR_WRONGNAME");
                 return ;
             }
             Channel *chat = new Channel(channel_name, "No topic yet", client_fd);
             channel_list[channel_name] = chat;
+            if (buffer.size() == 2)
+                channel_list[channel_name]->set_password(client_fd, buffer[1]);
             std::string msg2 = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host JOIN :" + channel_name;
             send_msg(client_fd, msg2);
             client_list[client_fd]->add_channel(chat);
@@ -31,11 +48,12 @@ void    Server::handle_each_channel(std::string channel_name, int client_fd)//ne
         }
         else
         {
-            if (it->second->is_invite_only())
+            if (channel_list[channel_name]->is_invite_only() &&  !check_invitation(client_fd, channel_name))
             {
-                std::string msg = "IRC Can't join channel " + it->first + " : Channel is invite only";
-                send_msg(client_fd, msg);
+                send_msg(client_fd, "IRC Can't join channel: is invite only");
+                return ;
             }
+               
             else if (client_list[client_fd]->is_joined(channel_name))
             {
                 std::string msg = "IRC Can't join channel " + it->first + " : you already joined this channel";
@@ -43,11 +61,13 @@ void    Server::handle_each_channel(std::string channel_name, int client_fd)//ne
             }
             else
             {
-                if (handle_key(channel_name))
-                {
-                    send_msg(client_fd, "IRC ERR_WRONGPASSWORD");
-                    return ;
-                }
+                std::cout << "is invited : " << check_invitation(client_fd, channel_name) << std::endl;
+                if (check_invitation(client_fd, channel_name) == 0)
+                    if (!channel_list[channel_name]->get_pass().empty() && (buffer.size() != 2 || buffer[1] != channel_list[channel_name]->get_pass()))
+                    {
+                        send_msg(client_fd, "IRC ERR_WRONGPASSWORD");
+                        return ;
+                    }
                 client_list[client_fd]->add_channel(it->second);
                 //<user>!<user>@<host> JOIN :#channel_name
                 std::string msg = it->first + " User " + client_list[client_fd]->get_nickname() + " just joined this channel !";
@@ -79,10 +99,8 @@ void	Server::join_channel(std::string command, int client_fd)//mettre arobase de
         send_msg(client_fd, "IRC Error: you need to be authenticated first");
         return ;
     }
-
-    if (!count)
-        count = 1;
-    std::vector<char *> names = parse_request(buffer[1], ", ", count);
+    count += 1;
+    std::vector<char *> names = parse_request(buffer[1], ",", count);
 
     for (int x = 0; x < count; x++)
     {
@@ -147,8 +165,7 @@ void	Server::quit_channel(std::string command, int client_fd)
         send_msg(client_fd, "IRC Error: you need to be authenticated first");
         return ;
     }
-    if (!count)
-        count = 1;
+    count += 1;
     for (int x = 0; x < count; x++)
     {
         std::string channel_name = names[x];
@@ -162,9 +179,13 @@ void	Server::quit_channel(std::string command, int client_fd)
             send_msg(client_fd, "IRC ERR_CHANNELISNOTJOINED");
             continue ;
         }
-        std::string quit = channel_name + " User " + client_list[client_fd]->get_nickname() + " just quitted the channel";
+        std::string quit = channel_name + " User " + client_list[client_fd]->get_nickname() + " just quit the channel";
         channel_list[channel_name]->send_to_all(client_fd, quit);
+        quit = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host PART :" + channel_name;
+        std::cout << "quit " << quit << std::endl;
+        send_msg(client_fd, quit);
         channel_list[channel_name]->remove_from_list(client_list[client_fd]);
+
         if (!message.empty())
             channel_list[channel_name]->send_to_all(client_fd, message);
         if (channel_list[channel_name]->get_operator() == client_fd || channel_list[channel_name]->get_client_list().size() == 0)

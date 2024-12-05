@@ -27,6 +27,7 @@ class User
 		int									client_fd;
 		struct sockaddr_in 					client_adress;
 		std::map<std::string, Channel *>	channel_joined;
+		std::map<std::string, Channel *>	channel_invited;
 		std::map<std::string, Channel *>	isOp_onChannel;
 
 	public:
@@ -40,6 +41,8 @@ class User
 		void								set_nickname(std::string _nickname);
 		void								set_username(std::vector<char *> _username);
 
+		void								set_invitedChannel( Channel *channel);
+
 	/*------Getters----*/
 		std::string							get_nickname() const;
 		std::string							get_username() const;
@@ -50,12 +53,15 @@ class User
 		struct sockaddr_in					get_client_adress() const;
 		std::map<std::string, Channel *>	get_channel_list() const;
 		std::string							get_userBuffer();
-	
+
+		std::map<std::string, Channel *>	get_channel_invited() const;
+		void								remove_invitation(std::string channel);
 	/*-----Others-----*/
 		void								user_buffer(char *new_buffer);
 		void								remove_channel(std::string channel_name);
 		void								add_channel( Channel *channel);
 		bool								is_joined(std::string channel);
+		
 
 
 		/*------Operator function-----*/

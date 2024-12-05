@@ -19,7 +19,7 @@ void	Server::add_client(void)
     fds.push_back(client_pollfd);
 }
 
-void	Server::set_nickname(std::string nickname_str, int client_fd)
+void	Server::set_nickname(std::string nickname_str, int client_fd)//verifier message a renvoyer si pas de nick ou changement de nick ou nick setup
 {
     std::vector<char *> buffer = parse_request((char *)nickname_str.c_str(), " \r\n", 2);
     buffer.erase(buffer.begin());
@@ -51,7 +51,7 @@ void	Server::set_nickname(std::string nickname_str, int client_fd)
     //leak to correct -TODO
 }
 
-void	Server::set_username(std::string username_str, int client_fd)
+void	Server::set_username(std::string username_str, int client_fd)//verifier message a renvoyer si pas de user ou changement de user ou user setup
 {
     std::vector<char *> buffer = parse_request((char*)(username_str.c_str()), " :*\r\n", 5);
     
@@ -74,7 +74,7 @@ void	Server::set_username(std::string username_str, int client_fd)
     //            << "Fullname : " << client_list[client_fd]->get_fullname() << std::endl;
 }
 
-void	Server::auth_client(int client_fd, std::string _password)
+void	Server::auth_client(int client_fd, std::string _password)//-TODO si pas de nickname peut pas s'autenthifier
 {
     std::vector<char *> buffer = parse_request((char *)_password.c_str(), " :\r\n", 2);
 

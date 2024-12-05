@@ -10,10 +10,15 @@ std::string    remove_endl(std::string str)
 void	Server::channel_msg(int client_fd, std::string channel_name, std::string msg)
 {
     if (channel_list.find(channel_name) == channel_list.end())
-        {
-            send_msg(client_fd, "IRC Error: can't find channel");
-            return ;
-        }
+    {
+         send_msg(client_fd, "IRC Error: can't find channel");
+          return ;
+    }
+    if (!client_list[client_fd]->is_joined(channel_name))
+    {
+        send_msg(client_fd, "IRC Error: channel is not joined");
+        return ;
+    }
     std::string nickname = client_list[client_fd]->get_nickname();
     if (channel_list[channel_name]->get_operator() == client_fd)
     {

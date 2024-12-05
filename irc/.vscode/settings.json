@@ -6,6 +6,7 @@
         "cstring": "cpp",
         "sstream": "cpp",
         "new": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "*.tcc": "cpp"
     }
 }

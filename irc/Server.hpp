@@ -51,7 +51,6 @@ class Server
 		void								channel_msg(int client_fd, std::string channel_name, std::string msg);
 		void								handle_mod(std::string buffer, int client_fd);
 		void   								handle_each_channel(std::string channel_name, int client_fd);//need to be tesed
-		int									handle_key(std::string channel_name);//NEED TO BE TESTED
 		int									get_socket() const;//DONE
 		void								hashCommand(char* _buffer, std::map<int, User *>::iterator it, int x);//DONE
 		struct sockaddr_in					get_server_adress() const;//DONE
@@ -60,6 +59,7 @@ class Server
 		std::map<std::string, Channel *>	get_channel_list() const;//DONE
 		std::vector<struct pollfd>			get_fds() const;//DONE
 		std::set<std::string>				get_unavilable_nick() const;//DONE
+		int									check_invitation(int client_fd, std::string channel_name);
 		~Server();
 
 		/*----Nucleocherrry's functions-------*/

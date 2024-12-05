@@ -146,98 +146,87 @@ int					Server::get_client_fd_by_nickname(std::string _nickname)//-TODO faire un
 	return (-1);
 }
 
-
-void				Server::kick_user(std::string demand, int client_fd)
+void                Server::kick_user(std::string demand, int client_fd)
 {
-	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
-	buffer.erase(buffer.begin());
+    std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 4); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+    buffer.erase(buffer.begin());
 
-
-	if (buffer.size() < 2)
+    if (buffer.size() < 2)
     {
         send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_NEEDMOREPARAMS");
         return ;
     }
 
 
-	int kickedClient = get_client_fd_by_nickname(buffer[1]);
-	if (kickedClient == -1/*cherche si il existe*/)
+    int kickedClient = get_client_fd_by_nickname(buffer[1]);
+    if (kickedClient == -1/*cherche si il existe*/)
     {
         send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_DOESNOTEXIST");
         return ;
     }
+    std::string channelName = buffer[0];
+    if (channel_list[channelName]->get_operator() == client_list[client_fd]->get_client_fd())
+    {
+        if (client_list[client_fd]->get_client_fd() == kickedClient)
+        {
+            send_msg(client_list[client_fd]->get_client_fd(), "IRC Op cant kick himself it would delete the whole server");
+            return ;
+        }
+        std::string msg = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host KICK " + channelName + " " + client_list[kickedClient]->get_nickname() + " :";
+        std::cout << "msg: " << msg << std::endl;
+        channel_list[channelName]->send_to_all(client_fd, msg);
+        channel_list[channelName]->remove_from_list(client_list[kickedClient]);
+        send_msg(client_fd, "IRC Kicked worked successfully");//-TOFIX ajouter si il existe le message de kick
+    }
+    else
+    {
+        std::string error = client_list[client_fd]->get_nickname() + " Isnt the operator";
+        send_msg(client_fd, "IRC " + error); //std::cout << "" << std::endl;  /\/\/\/\/\ message a envoyer ici -TOEND
 
-	if (channel_list[buffer[0]]->get_operator() == client_list[client_fd]->get_client_fd())
-	{
-		if (client_list[client_fd]->get_client_fd() == kickedClient)
-		{
-			std::cout << "IRC Op cant kick himself it would delete the whole server" << std::endl;
-			return ;
-		}
-		else
-			channel_list[buffer[0]]->remove_from_list(client_list[kickedClient]); //-TOFIX ajouter si il existe le message de kick
-	}
-	else
-		std::cout << client_list[kickedClient] << " Isnt the operator" << std::endl;//std::cout << "" << std::endl;  /\/\/\/\/\ message a envoyer ici -TOEND
+    }
 }
 
-void				Server::invite_user(int client_fd, std::string demand)
+void                Server::invite_user(int client_fd, std::string demand)
 {
-	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
-	buffer.erase(buffer.begin());
+    //INVITE <nickname> <channel>
 
-	if (buffer.size() != 3)
+    std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+    buffer.erase(buffer.begin());
+
+    if (buffer.size() < 2)
     {
         send_msg(client_fd, "IRC ERR_NEEDMOREPARAMS");
         return ;
     }
 
-	int invitedClient = get_client_fd_by_nickname(buffer[0]); // IS ALSO JUST A CAST
-	std::string channelInvited_name(buffer[1]); //IS JUST A CAST
+    int invitedClient = get_client_fd_by_nickname(buffer[0]); // IS ALSO JUST A CAST
+    std::string channelInvited_name(buffer[1]); //IS JUST A CAST
 
-	if (invitedClient == -1/*cherche si il existe*/)
+    if (invitedClient == -1 /*cherche si il existe*/)
     {
-        send_msg(client_fd, "IRC ERR_DOESNOTEXIST");
+        send_msg(client_fd, "IRC USER_DOESNOTEXIST");
         return ;
     }
 
-    std::map<int, User *>::iterator itUser = channel_list[channelInvited_name]->get_client_list().find(client_fd);
-
-    if (itUser == channel_list[channelInvited_name]->get_client_list().end())
+    if (!channel_list[channelInvited_name]/*cherche si il existe*/)
     {
-        send_msg(client_fd, "IRC ERR_USERNOTFOUND");
+        send_msg(client_fd, "IRC CHANNEL_DOESNOTEXIST");
         return ;
     }
 
-    std::map<int, User *>::iterator itUserinvited = channel_list[channelInvited_name]->get_client_list().find(invitedClient);
-    if (itUserinvited == channel_list[channelInvited_name]->get_client_list().end())
+    if (client_list[invitedClient]->is_joined(channelInvited_name)/*cherche si il existe*/)
     {
-        send_msg(client_fd, "IRC ERR_USERNOTFOUND");
+        send_msg(client_fd, "IRC USER_ALREADY_IN");
         return ;
     }
 
-    std::map<std::string, Channel *>::iterator itChan = channel_list.find(channelInvited_name);
+    std::string msg = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host INVITE " + client_list[invitedClient]->get_nickname() + ":" + channelInvited_name;
+    std::string msg2 = ":server_name 341 " + client_list[client_fd]->get_nickname() + " " + client_list[invitedClient]->get_nickname() + " " + channelInvited_name;
+    send_msg(invitedClient, msg);
+    send_msg(client_fd, msg2);
+    //if (client_list[invitedClient])
 
-    if (itChan == channel_list.end())
-        send_msg(client_fd, "IRC ERR_CHANNELNOTFOUND");
-    else
-    {
-        if (itUser->second->is_joined(channelInvited_name) == false)
-        {
-            send_msg(client_fd, "ERR_CHANNELNOTFOUND");
-            return ;
-        }
-        else if (itUserinvited->second->is_joined(channelInvited_name) == false)
-        {
-            send_msg(client_fd, "ERR_CHANNELNOTJOINED");
-            return ;
-        }
-        else
-        {
-            std::string msg = "IRC Invited " + itUserinvited->second->get_nickname() + " to " + itChan->second->get_name() + " successfully";
-            itChan->second->add_to_list(itUserinvited->second);
-        }
-    }
+   client_list[invitedClient]->set_invitedChannel(channel_list[channelInvited_name]);
 }
 
 void	Server::help(int client_fd, std::string demand)
