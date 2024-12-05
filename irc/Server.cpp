@@ -229,44 +229,76 @@ void                Server::invite_user(int client_fd, std::string demand)
    client_list[invitedClient]->set_invitedChannel(channel_list[channelInvited_name]);
 }
 
+void	Server::change_topic(int client_fd, std::string demand)
+{
+	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 3); // ici on peux ajouter pour le commentaire a voir comment implemaneter -TODO
+    buffer.erase(buffer.begin());
+
+    if (buffer.size() < 1)
+    {
+        send_msg(client_fd, "IRC ERR_NEEDMOREPARAMS");
+        return ;
+    }
+	if (buffer.size() == 1)
+	{
+		std::string msg = "IRC TOPIC : " + channel_list[buffer[1]]->get_topic();
+		send_msg(client_fd, msg);
+		return ;
+	}
+
+	std::string channelName = buffer[0];
+	if (channel_list[channelName]->get_operator() != client_fd && channel_list[channelName]->get_topic_changement() == false)
+	{
+		send_msg(client_fd, "IRC You cannot change the topic");
+		return ;
+	}
+	std::cout << "len of buffer : " << buffer.size() << std::endl;
+	if (buffer.size() >= 2)
+	{
+		channel_list[buffer[0]]->set_topic(buffer[1]);
+		send_msg(client_fd, "IRC Topic changed successfully");
+	}
+	
+}
+
 void	Server::help(int client_fd, std::string demand)
 {
 	std::vector<char *> buffer = parse_request((char*)(demand.c_str()), " :*\r\n", 2);
 
     if (buffer.size() == 1)
     {
-        send_msg(client_fd, " - - - - - - COMMANDS  - - - - - -\n [KICK] [INVITE] [TOPIC] [MODE] [PART] [NICK] [JOIN] [USER] [PASS] [PRIVMSG] [HELP] [CAP LS 302] [QUIT] [CAP END]\n - - - - - - - - - - - - - - - - -");
+        send_msg(client_fd, "IRC [KICK] [INVITE] [TOPIC] [MODE] [PART] [NICK] [JOIN] [USER] [PASS] [PRIVMSG] [HELP] [CAP LS 302] [QUIT] [CAP END]");
         return ;
     }
     else if (strncmp(buffer[1], "KICK", 4) == 0)
-		send_msg(client_fd, " (operator only) /KICK <channel> <user> [:<reason>]\n Used to remove an user from a channel");
+		send_msg(client_fd, "IRC (operator only) /KICK <channel> <user> [:<reason>]\n Used to remove an user from a channel");
     else if (strncmp(buffer[1], "INVITE", 6) == 0)
-		send_msg(client_fd, " /INVITE <nickname> <channel>\n Used to invite an user to a private channel");
+		send_msg(client_fd, "IRC /INVITE <nickname> <channel>\n Used to invite an user to a private channel");
     else if (strncmp(buffer[1], "TOPIC", 5) == 0)
-		send_msg(client_fd, " (operator only) /TOPIC <channel> [:<new topic>]\n Used to change the topic of a channel");
+		send_msg(client_fd, "IRC (operator only) /TOPIC <channel> [:<new topic>]\n Used to change the topic of a channel");
     else if (strncmp(buffer[1], "MODE", 4) == 0)
-		send_msg(client_fd, " (operator only) /MODE <channel|nickname> [<mode>] [parameters]\n Used to setup the channel's mode");
+		send_msg(client_fd, "IRC (operator only) /MODE <channel|nickname> [<mode>] [parameters]\n Used to setup the channel's mode");
     else if (strncmp(buffer[1], "PART", 4) == 0)
-        send_msg(client_fd, " /PART <channel> [:<message>]\n Used to leave a channel optionally with a message");
+        send_msg(client_fd, "IRC /PART <channel> [:<message>]\n Used to leave a channel optionally with a message");
     else if (strncmp(buffer[1], "NICK", 4) == 0)
-        send_msg(client_fd, " /NICK <new nickname>\n Used to change your nickname");
+        send_msg(client_fd, "IRC /NICK <new nickname>\n Used to change your nickname");
     else if (strncmp(buffer[1], "JOIN", 4) == 0)
-        send_msg(client_fd, " /JOIN <channel> [<key>]\n Used to join a channel, optionally with a password");
+        send_msg(client_fd, "IRC /JOIN <channel> [<key>]\n Used to join a channel, optionally with a password");
     else if (strncmp(buffer[1], "USER", 4) == 0)
-        send_msg(client_fd, " /USER <username> <hostname> <servername> :<realname>\n Used to register a new user with the server");
+        send_msg(client_fd, "IRC /USER <username> <hostname> <servername> :<realname>\n Used to register a new user with the server");
     else if (strncmp(buffer[1], "PASS", 4) == 0)
-        send_msg(client_fd, " /PASS <password>\n Used to authenticate with the server using a password");
+        send_msg(client_fd, "IRC /PASS <password>\n Used to authenticate with the server using a password");
     else if (strncmp(buffer[1], "PRIVMSG", 7) == 0)
-        send_msg(client_fd, " /PRIVMSG <receiver> :<message>\n Used to send a private message to a user or a channel");
+        send_msg(client_fd, "IRC /PRIVMSG <receiver> :<message>\n Used to send a private message to a user or a channel");
     else if (strncmp(buffer[1], "CAP LS 302", 10) == 0)
-        send_msg(client_fd, " /CAP LS 302\n Used to list the capabilities supported by the server");
+        send_msg(client_fd, "IRC /CAP LS 302\n Used to list the capabilities supported by the server");
     else if (strncmp(buffer[1], "QUIT", 4) == 0)
-        send_msg(client_fd, " /QUIT [:<message>]\n Used to disconnect from the server optionally with a quit message");
+        send_msg(client_fd, "IRC /QUIT [:<message>]\n Used to disconnect from the server optionally with a quit message");
     else if (strncmp(buffer[1], "CAP END", 7) == 0)
-        send_msg(client_fd, " /CAP END\n Ends the capability negotiation process");
+        send_msg(client_fd, "IRC /CAP END\n Ends the capability negotiation process");
     else if (strncmp(buffer[1], "end server 1234987", 18) == 0)
-        send_msg(client_fd, " (admin only) /end server 1234987\n Shuts down the server immediately");	
+        send_msg(client_fd, "IRC (admin only) /end server 1234987\n Shuts down the server immediately");	
 	else
-        send_msg(client_fd, "UNKOWN COMMAND");
+        send_msg(client_fd, "IRC UNKOWN COMMAND");
 	return;
 }

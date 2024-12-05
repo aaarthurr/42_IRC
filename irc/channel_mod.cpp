@@ -25,19 +25,39 @@ void Server::handle_mod(std::string buffer, int client_fd)
 	{
 		if (!channel_list[tab[1]]->is_invite_only())
 		{
-			std::string msg = channel_list[tab[1]]->get_name() + " Channel was set to invite only";
+			std::string msg = channel_list[tab[1]]->get_name() + "IRC Channel was set to invite only";
 			channel_list[tab[1]]->set_invite_only(true);
 			channel_list[tab[1]]->send_to_all(0, msg);
 		}
 		else
-			send_msg(client_fd, "IRC Channel's already invite only dumbass");
+		{
+			std::string msg = channel_list[tab[1]]->get_name() + "IRC Channel was set to open";
+			channel_list[tab[1]]->set_invite_only(false);
+			channel_list[tab[1]]->send_to_all(0, msg);
+		}
 	}
 	else if (mode == "-t")
 	{
-		if (tab.size() > 3)
-			channel_list[tab[1]]->set_topic(tab[3]);
+//-TODO
+		if (channel_list[tab[1]]->get_operator() == client_fd)
+		{
+			if (channel_list[tab[1]]->get_topic_changement() == false)
+			{
+				channel_list[tab[1]]->set_topic_changement(true);
+				send_msg(client_fd, "IRC Topic changement is open");
+			}
+			else
+			{
+				channel_list[tab[1]]->set_topic_changement(false);
+				send_msg(client_fd, "IRC Topic changement is closen");
+			}
+		}
 		else
-			send_msg(client_fd, "IRC ERR_NEEDMOREPARAM");
+		{
+			send_msg(client_fd, "IRC you are not the operator");
+			return ;
+		}
+
 	}
 	else if (mode == "-k")
 	{
@@ -48,13 +68,18 @@ void Server::handle_mod(std::string buffer, int client_fd)
 	else if (mode == "-o")
 	{
 		channel_list[tab[1]]->set_operator(client_fd, tab[3]);
-		
+		//client_list[client_fd]->remove_op_channel(channel_list[tab[1]]); a verifier
 	}
 	else if (mode == "-l")
-        std::cout << "Change limit of user :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
+	{
+		if (tab.size() > 3)
+			channel_list[tab[1]]->set_user_limit(std::atoi(tab[3]));
+		else
+			channel_list[tab[1]]->set_user_limit(0);
+	}
 	else
 	{
-		std::string msg = "Unknown flag : ";
+		std::string msg = "IRC Unknown flag : ";
 		msg += tab[2];
     	send_msg(client_fd, msg);
 	}

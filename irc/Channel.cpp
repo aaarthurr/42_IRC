@@ -46,6 +46,33 @@ std::map<int , User *>		Channel::get_client_list() const
 	return (client_list);
 }
 
+void	Channel::set_user_limit(int new_limit)
+{
+	std::cout << (int)client_list.size() << std::endl;
+	if ((int)client_list.size() > new_limit && new_limit != 0)
+	{
+		send_to_all(0, "Error Limit under total of users");
+		return ;
+	}
+	else
+		user_limit = new_limit;
+}
+
+int		Channel::get_user_limit()
+{
+	return (user_limit);
+}
+
+void	Channel::set_topic_changement(bool changement)
+{
+	topic_changement = changement;
+}
+
+bool	Channel::get_topic_changement()
+{
+	return (topic_changement);
+}
+
 void	Channel::add_to_list(const User   *client)
 {
 	client_list[client->get_client_fd()] = (User *)client;

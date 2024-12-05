@@ -48,6 +48,11 @@ void    Server::handle_each_channel(std::string channel, int client_fd)//need to
         }
         else
         {
+			if (channel_list[channel_name]->get_user_limit() != 0 && channel_list[channel_name]->get_user_limit() == (int)channel_list[channel_name]->get_client_list().size())
+			{
+				send_msg(client_fd, "IRC The channel is full");
+				return ;
+			}
             if (channel_list[channel_name]->is_invite_only() &&  !check_invitation(client_fd, channel_name))
             {
                 send_msg(client_fd, "IRC Can't join channel: is invite only");
@@ -106,6 +111,7 @@ void	Server::join_channel(std::string command, int client_fd)//mettre arobase de
     {
        handle_each_channel(names[x], client_fd);
     }
+
 
     //------if not created-----
         //broadcast to all user if not created

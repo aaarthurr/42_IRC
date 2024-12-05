@@ -54,6 +54,8 @@ void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x
 		send_msg(it->first, "CAP * LS :");
 	else if (strncmp(buffer, "QUIT", 4) == 0)
 		remove_client(it, x);
+	else if (strncmp(buffer, "TOPIC", 5) == 0)
+		change_topic(it->first, buffer);
 	else if (strncmp(buffer, "end server 1234987", 18) == 0)
 		exit(0);
 	else if (strncmp("CAP END", buffer, 7))
