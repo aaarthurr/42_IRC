@@ -106,7 +106,7 @@ void				Channel::kick_everyone()
 
 std::string	Channel::get_client_str(std::string nickname)
 {
-	std::string msg = "IRC " + nickname + " = " + name + " :";
+	std::string msg = ":server 353 " + nickname + " = " + name + " :";
 	for (std::map<int, User *>::iterator it = client_list.begin(); it != client_list.end(); it++)
 	{
 		if (it->first == _operator)

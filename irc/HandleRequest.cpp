@@ -27,7 +27,7 @@ std::vector<char *> Server::parse_request(char *buffer, const char *delim, int w
 }
 
 //fonction to return the command index for the switch case
-void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x)
+void Server::hashCommand(char* buffer, std::map<int, User *>::iterator it, int x) // gerer who et mode +b
 {
 
 	if (strncmp(buffer, "KICK", 4) == 0)

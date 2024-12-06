@@ -21,7 +21,7 @@ void Server::handle_mod(std::string buffer, int client_fd)
 		return;
 	}
 	std::string mode(tab[2]);
-	if (mode == "-i")
+	if (mode == "+i")
 	{
 		if (!channel_list[tab[1]]->is_invite_only())
 		{
@@ -36,7 +36,7 @@ void Server::handle_mod(std::string buffer, int client_fd)
 			channel_list[tab[1]]->send_to_all(0, msg);
 		}
 	}
-	else if (mode == "-t")
+	else if (mode == "+t")
 	{
 //-TODO
 		if (channel_list[tab[1]]->get_operator() == client_fd)
@@ -49,7 +49,7 @@ void Server::handle_mod(std::string buffer, int client_fd)
 			else
 			{
 				channel_list[tab[1]]->set_topic_changement(false);
-				send_msg(client_fd, "IRC Topic changement is closen");
+				send_msg(client_fd, "IRC Topic changement is close");
 			}
 		}
 		else
@@ -59,25 +59,25 @@ void Server::handle_mod(std::string buffer, int client_fd)
 		}
 
 	}
-	else if (mode == "-k")
+	else if (mode == "+k")
 	{
 
 		channel_list[tab[1]]->set_password(client_fd, tab[3]);
         std::cout << "Change Key :" << (tab.size() > 3 ? tab[3] : "*no params*") << std::endl;
 	}
-	else if (mode == "-o")
+	else if (mode == "+o")
 	{
 		channel_list[tab[1]]->set_operator(client_fd, tab[3]);
 		//client_list[client_fd]->remove_op_channel(channel_list[tab[1]]); a verifier
 	}
-	else if (mode == "-l")
+	else if (mode == "+l")
 	{
 		if (tab.size() > 3)
 			channel_list[tab[1]]->set_user_limit(std::atoi(tab[3]));
 		else
 			channel_list[tab[1]]->set_user_limit(0);
 	}
-	else
+	else if (mode != "+b")
 	{
 		std::string msg = "IRC Unknown flag : ";
 		msg += tab[2];

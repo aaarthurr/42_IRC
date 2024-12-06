@@ -11,12 +11,12 @@ void	Server::channel_msg(int client_fd, std::string channel_name, std::string ms
 {
     if (channel_list.find(channel_name) == channel_list.end())
     {
-         send_msg(client_fd, "IRC Error: can't find channel");
-          return ;
+        send_msg(client_fd, ":server 403 ERR_NOSUCHCHANNEL");
+        return ;
     }
     if (!client_list[client_fd]->is_joined(channel_name))
     {
-        send_msg(client_fd, "IRC Error: channel is not joined");
+        send_msg(client_fd, ":server 442 ERR_NOTONCHANNEL");
         return ;
     }
     std::string nickname = client_list[client_fd]->get_nickname();
@@ -40,7 +40,10 @@ void	Server::privmsg(int client_fd, std::string demand)
 
     if (buffer.size() < 3)
     {
-        send_msg(client_fd, "IRC Error: not enough parameter");
+        if (buffer.size() == 2)
+            send_msg(client_fd, ":server 411 ERR_NORECIPIENT");
+        else
+            send_msg(client_fd, ":server 412 ERR_NOTEXTTOSEND");
         return ;
     }
 	if (buffer[1][0] == '#')
@@ -54,7 +57,7 @@ void	Server::privmsg(int client_fd, std::string demand)
         it++;
     if (it == client_list.end())
     {
-        send_msg(client_fd, "IRC Error: can't find user");
+        send_msg(client_fd, ":server 401 ERR_NOSUCHNICK");
         return ;
     }
     if (!client_list[it->first]->get_auth())

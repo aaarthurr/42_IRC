@@ -161,7 +161,7 @@ void                Server::kick_user(std::string demand, int client_fd)
     int kickedClient = get_client_fd_by_nickname(buffer[1]);
     if (kickedClient == -1/*cherche si il existe*/)
     {
-        send_msg(client_list[client_fd]->get_client_fd(), "IRC ERR_DOESNOTEXIST");
+        send_msg(client_list[client_fd]->get_client_fd(), ":server 441 ERR_USERNOTINCHANNEL");
         return ;
     }
     std::string channelName = buffer[0];
@@ -179,11 +179,7 @@ void                Server::kick_user(std::string demand, int client_fd)
         send_msg(client_fd, "IRC Kicked worked successfully");//-TOFIX ajouter si il existe le message de kick
     }
     else
-    {
-        std::string error = client_list[client_fd]->get_nickname() + " Isnt the operator";
-        send_msg(client_fd, "IRC " + error); //std::cout << "" << std::endl;  /\/\/\/\/\ message a envoyer ici -TOEND
-
-    }
+        send_msg(client_fd, ":server 482 ERR_USERNOTINCHANNEL"); //std::cout << "" << std::endl;  /\/\/\/\/\ message a envoyer ici -TOEND
 }
 
 void                Server::invite_user(int client_fd, std::string demand)
@@ -204,19 +200,23 @@ void                Server::invite_user(int client_fd, std::string demand)
 
     if (invitedClient == -1 /*cherche si il existe*/)
     {
-        send_msg(client_fd, "IRC USER_DOESNOTEXIST");
+        send_msg(client_fd, "IRC ERR_USER_DOESNOTEXIST");
         return ;
     }
 
     if (!channel_list[channelInvited_name]/*cherche si il existe*/)
     {
-        send_msg(client_fd, "IRC CHANNEL_DOESNOTEXIST");
+        send_msg(client_fd, "IRC ERR_CHANNEL_DOESNOTEXIST");
         return ;
     }
-
+    if (channel_list[channelInvited_name]->get_user_limit() == (int)channel_list[channelInvited_name]->get_client_list().size())
+    {
+        send_msg(client_fd, "IRC ERR_CHANNEL_FULL");
+        return ;
+    }
     if (client_list[invitedClient]->is_joined(channelInvited_name)/*cherche si il existe*/)
     {
-        send_msg(client_fd, "IRC USER_ALREADY_IN");
+        send_msg(client_fd, "IRC ERR_USER_ALREADY_IN");
         return ;
     }
 

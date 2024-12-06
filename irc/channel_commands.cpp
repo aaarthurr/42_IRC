@@ -32,7 +32,7 @@ void    Server::handle_each_channel(std::string channel, int client_fd)//need to
 
             if (std::count(channel_name.begin(), channel_name.end(), '#') > 1 || channel_name.size() > 200 || channel_name.find(' ') != std::string::npos)
             {
-                send_msg(client_fd, "IRC Error: ERR_WRONGNAME");
+                send_msg(client_fd, ":server 432 ERR_ERRONEUSCHANNELNAME");
                 return ;
             }
             Channel *chat = new Channel(channel_name, "No topic yet", client_fd);
@@ -49,19 +49,12 @@ void    Server::handle_each_channel(std::string channel, int client_fd)//need to
         else
         {
 			if (channel_list[channel_name]->get_user_limit() != 0 && channel_list[channel_name]->get_user_limit() == (int)channel_list[channel_name]->get_client_list().size())
-			{
-				send_msg(client_fd, "IRC The channel is full");
-				return ;
-			}
-            if (channel_list[channel_name]->is_invite_only() &&  !check_invitation(client_fd, channel_name))
-            {
-                send_msg(client_fd, "IRC Can't join channel: is invite only");
-                return ;
-            }
-               
+				send_msg(client_fd, ":server 471 ERR_CHANNELISFULL");
+            else if (channel_list[channel_name]->is_invite_only() &&  !check_invitation(client_fd, channel_name))
+                send_msg(client_fd, ":server 473 ERR_INVITEONLYCHAN");
             else if (client_list[client_fd]->is_joined(channel_name))
             {
-                std::string msg = "IRC Can't join channel " + it->first + " : you already joined this channel";
+                std::string msg = ":server 443 " + client_list[client_fd]->get_nickname() + " " + channel_name + " :You're already on that channel";
                 send_msg(client_fd, msg);
             }
             else
@@ -70,7 +63,7 @@ void    Server::handle_each_channel(std::string channel, int client_fd)//need to
                 if (check_invitation(client_fd, channel_name) == 0)
                     if (!channel_list[channel_name]->get_pass().empty() && (buffer.size() != 2 || buffer[1] != channel_list[channel_name]->get_pass()))
                     {
-                        send_msg(client_fd, "IRC ERR_WRONGPASSWORD");
+                        send_msg(client_fd, ":server 475 ERR_BADCHANNELKEY");
                         return ;
                     }
                 client_list[client_fd]->add_channel(it->second);
@@ -81,8 +74,8 @@ void    Server::handle_each_channel(std::string channel, int client_fd)//need to
                 std::string msg2 = ":" + client_list[client_fd]->get_nickname() + "!" + client_list[client_fd]->get_username() + "@host JOIN :" + channel_name;
                 std::string msg3 = "IRC " + client_list[client_fd]->get_nickname()  + " " + it->first + " : <" + it->second->get_topic() + ">";
                 send_msg(client_fd, msg2);
-                send_msg(client_fd, msg3);
                 send_msg(client_fd, it->second->get_client_str(client_list[client_fd]->get_nickname()));
+                send_msg(client_fd, msg3);
             }
         }
 }
@@ -157,7 +150,7 @@ void	Server::quit_channel(std::string command, int client_fd)
 
     if (buffer.size() < 2)
     {
-        send_msg(client_fd, "IRC ERR_NEEDMOREPARAM");
+        send_msg(client_fd, ":server 461 ERR_NEEDMOREPARAMS");
         return ;
     }
     std::string channels = buffer[1];
@@ -177,12 +170,12 @@ void	Server::quit_channel(std::string command, int client_fd)
         std::string channel_name = names[x];
         if (channel_list.find(channel_name) == channel_list.end())
         {
-            send_msg(client_fd, "IRC ERR_CHANNELDOESNTEXIST");
+            send_msg(client_fd, ":server 403 ERR_NOSUCHCHANNEL");
             continue ;
         }
         if (!client_list[client_fd]->is_joined(channel_name))
         {
-            send_msg(client_fd, "IRC ERR_CHANNELISNOTJOINED");
+            send_msg(client_fd, ":server 442 ERR_NOTONCHANNEL");
             continue ;
         }
         std::string quit = channel_name + " User " + client_list[client_fd]->get_nickname() + " just quit the channel";
